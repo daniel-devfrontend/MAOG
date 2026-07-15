@@ -91,20 +91,18 @@ body {
   position: fixed;
   inset: 88px 16px auto 16px;
   z-index: 20;
-  display: grid;
+  display: none;
   gap: 10px;
   padding: 18px;
   background: rgba(17, 24, 39, 0.96);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 24px;
-  transform: scaleY(0);
-  transform-origin: top;
   opacity: 0;
   pointer-events: none;
-  transition: transform 0.22s ease, opacity 0.22s ease;
+  transition: opacity 0.22s ease;
 }
 .tabs.open {
-  transform: scaleY(1);
+  display: grid;
   opacity: 1;
   pointer-events: auto;
 }
