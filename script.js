@@ -1,15 +1,25 @@
 ﻿const STORAGE_KEY = 'modapro-admin-data';
 const defaultData = {
   inversion: [],
+  compras: [],
   ventas: [],
   gastos: [],
+  inventario: [],
+  cuentasCobrar: [],
+  cuentasPagar: [],
+  proveedores: [],
   nomina: []
 };
 const state = loadState();
 const drafts = {
   inversion: null,
+  compras: null,
   ventas: null,
   gastos: null,
+  inventario: null,
+  cuentasCobrar: null,
+  cuentasPagar: null,
+  proveedores: null,
   nomina: null
 };
 const sectionButtons = document.querySelectorAll('.tab');
@@ -20,20 +30,34 @@ const menuToggle = document.getElementById('menuToggle');
 const mobileMenu = document.getElementById('mobileMenu');
 const tables = {
   inversion: document.querySelector('#tableInversion tbody'),
+  compras: document.querySelector('#tableCompras tbody'),
   ventas: document.querySelector('#tableVentas tbody'),
   gastos: document.querySelector('#tableGastos tbody'),
+  inventario: document.querySelector('#tableInventario tbody'),
+  cuentasCobrar: document.querySelector('#tableCuentasCobrar tbody'),
+  cuentasPagar: document.querySelector('#tableCuentasPagar tbody'),
+  proveedores: document.querySelector('#tableProveedores tbody'),
   nomina: document.querySelector('#tableNomina tbody')
 };
 const totals = {
   totalSales: document.getElementById('totalSales'),
   totalExpenses: document.getElementById('totalExpenses'),
   totalInvestment: document.getElementById('totalInvestment'),
+  totalPurchases: document.getElementById('totalPurchases'),
+  totalInventory: document.getElementById('totalInventory'),
+  totalReceivables: document.getElementById('totalReceivables'),
+  totalPayables: document.getElementById('totalPayables'),
   totalPayroll: document.getElementById('totalPayroll')
 };
 const cards = {
   inversion: document.getElementById('cardsInversion'),
+  compras: document.getElementById('cardsCompras'),
   ventas: document.getElementById('cardsVentas'),
   gastos: document.getElementById('cardsGastos'),
+  inventario: document.getElementById('cardsInventario'),
+  cuentasCobrar: document.getElementById('cardsCuentasCobrar'),
+  cuentasPagar: document.getElementById('cardsCuentasPagar'),
+  proveedores: document.getElementById('cardsProveedores'),
   nomina: document.getElementById('cardsNomina')
 };
 function loadState() {
@@ -53,7 +77,11 @@ function formatMoney(value) {
 }
 function calculateTotals() {
   const inv = state.inversion.reduce((sum, item) => sum + (Number(item.costo) || 0) * (Number(item.cantidad) || 0), 0);
+  const purchases = state.compras.reduce((sum, item) => sum + (Number(item.costoUnidad) || 0) * (Number(item.cantidad) || 0), 0);
   const exp = state.gastos.reduce((sum, item) => sum + (Number(item.costoUnidad) || 0) * (Number(item.cantidad) || 0), 0);
+  const inventoryValue = state.inventario.reduce((sum, item) => sum + (Number(item.costoUnidad) || 0) * (Number(item.stock) || 0), 0);
+  const receivables = state.cuentasCobrar.reduce((sum, item) => sum + (Number(item.monto) || 0), 0);
+  const payables = state.cuentasPagar.reduce((sum, item) => sum + (Number(item.monto) || 0), 0);
   const payroll = state.nomina.reduce((sum, item) => sum + (Number(item.sueldo) || 0), 0);
   const ventasTotal = state.ventas.reduce((sum, item) => {
     const parts = item.piPc ? item.piPc.split('/').map(value => Number(value.trim())) : [];
@@ -61,7 +89,11 @@ function calculateTotals() {
     return sum + amount;
   }, 0);
   totals.totalInvestment.textContent = formatMoney(inv);
+  totals.totalPurchases.textContent = formatMoney(purchases);
   totals.totalExpenses.textContent = formatMoney(exp);
+  totals.totalInventory.textContent = formatMoney(inventoryValue);
+  totals.totalReceivables.textContent = formatMoney(receivables);
+  totals.totalPayables.textContent = formatMoney(payables);
   totals.totalPayroll.textContent = formatMoney(payroll);
   totals.totalSales.textContent = formatMoney(ventasTotal);
 }
@@ -198,12 +230,51 @@ function getSectionFields(section) {
         { key: 'metodoPago', label: 'Método de pago' },
         { key: 'piPc', label: 'P.I / P.C', placeholder: 'P.I/P.C' }
       ];
+    case 'compras':
+      return [
+        { key: 'fecha', label: 'Fecha', type: 'date' },
+        { key: 'proveedor', label: 'Proveedor' },
+        { key: 'producto', label: 'Producto' },
+        { key: 'cantidad', label: 'Cantidad', type: 'number', placeholder: '0' },
+        { key: 'costoUnidad', label: 'Costo por unidad', type: 'number', placeholder: '0.00', prefix: '$' },
+        { key: 'metodoPago', label: 'Método de pago' }
+      ];
     case 'gastos':
       return [
         { key: 'fecha', label: 'Fecha', type: 'date' },
         { key: 'producto', label: 'Producto' },
         { key: 'cantidad', label: 'Cantidad', type: 'number', placeholder: '0' },
         { key: 'costoUnidad', label: 'Costo por unidad', type: 'number', placeholder: '0.00', prefix: '$' }
+      ];
+    case 'inventario':
+      return [
+        { key: 'producto', label: 'Producto' },
+        { key: 'stock', label: 'Stock', type: 'number', placeholder: '0' },
+        { key: 'costoUnidad', label: 'Costo por unidad', type: 'number', placeholder: '0.00', prefix: '$' },
+        { key: 'ubicacion', label: 'Ubicación' }
+      ];
+    case 'cuentasCobrar':
+      return [
+        { key: 'fecha', label: 'Fecha', type: 'date' },
+        { key: 'cliente', label: 'Cliente' },
+        { key: 'monto', label: 'Monto', type: 'number', placeholder: '0.00', prefix: '$' },
+        { key: 'vence', label: 'Vence', type: 'date' },
+        { key: 'estado', label: 'Estado', placeholder: 'Pendiente' }
+      ];
+    case 'cuentasPagar':
+      return [
+        { key: 'fecha', label: 'Fecha', type: 'date' },
+        { key: 'proveedor', label: 'Proveedor' },
+        { key: 'monto', label: 'Monto', type: 'number', placeholder: '0.00', prefix: '$' },
+        { key: 'vence', label: 'Vence', type: 'date' },
+        { key: 'estado', label: 'Estado', placeholder: 'Pendiente' }
+      ];
+    case 'proveedores':
+      return [
+        { key: 'nombre', label: 'Nombre' },
+        { key: 'contacto', label: 'Contacto' },
+        { key: 'telefono', label: 'Teléfono' },
+        { key: 'servicios', label: 'Servicios' }
       ];
     case 'nomina':
       return [

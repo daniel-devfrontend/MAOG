@@ -23,8 +23,13 @@
     <nav class="tabs" id="mobileMenu" aria-hidden="true">
       <button class="tab active" data-section="dashboard">Resumen</button>
       <button class="tab" data-section="inversion">Inversión</button>
+      <button class="tab" data-section="compras">Compras</button>
       <button class="tab" data-section="ventas">Ventas</button>
       <button class="tab" data-section="gastos">Gastos</button>
+      <button class="tab" data-section="inventario">Inventario</button>
+      <button class="tab" data-section="cuentasCobrar">Cuentas por cobrar</button>
+      <button class="tab" data-section="cuentasPagar">Cuentas por pagar</button>
+      <button class="tab" data-section="proveedores">Proveedores</button>
       <button class="tab" data-section="nomina">Nómina</button>
     </nav>
 
@@ -36,12 +41,28 @@
             <strong id="totalSales">0</strong>
           </article>
           <article class="stat-card">
+            <span>Compras</span>
+            <strong id="totalPurchases">0</strong>
+          </article>
+          <article class="stat-card">
             <span>Gastos</span>
             <strong id="totalExpenses">0</strong>
           </article>
           <article class="stat-card">
             <span>Inversión</span>
             <strong id="totalInvestment">0</strong>
+          </article>
+          <article class="stat-card">
+            <span>Inventario</span>
+            <strong id="totalInventory">0</strong>
+          </article>
+          <article class="stat-card">
+            <span>Cuentas x cobrar</span>
+            <strong id="totalReceivables">0</strong>
+          </article>
+          <article class="stat-card">
+            <span>Cuentas x pagar</span>
+            <strong id="totalPayables">0</strong>
           </article>
           <article class="stat-card">
             <span>Nómina</span>
@@ -102,6 +123,32 @@
         <div class="cards-view" id="cardsVentas"></div>
       </section>
 
+      <section id="compras" class="panel-section">
+        <div class="section-header">
+          <div>
+            <h2>Compras</h2>
+          </div>
+          <button data-add="compras" class="button secondary">Agregar</button>
+        </div>
+        <div class="table-frame">
+          <table id="tableCompras">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Proveedor</th>
+                <th>Producto</th>
+                <th>Cant.</th>
+                <th>Costo</th>
+                <th>Pago</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="cards-view" id="cardsCompras"></div>
+      </section>
+
       <section id="gastos" class="panel-section">
         <div class="section-header">
           <div>
@@ -124,6 +171,104 @@
           </table>
         </div>
         <div class="cards-view" id="cardsGastos"></div>
+      </section>
+
+      <section id="inventario" class="panel-section">
+        <div class="section-header">
+          <div>
+            <h2>Inventario</h2>
+          </div>
+          <button data-add="inventario" class="button secondary">Agregar</button>
+        </div>
+        <div class="table-frame">
+          <table id="tableInventario">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Stock</th>
+                <th>Costo</th>
+                <th>Ubicación</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="cards-view" id="cardsInventario"></div>
+      </section>
+
+      <section id="cuentasCobrar" class="panel-section">
+        <div class="section-header">
+          <div>
+            <h2>Cuentas por cobrar</h2>
+          </div>
+          <button data-add="cuentasCobrar" class="button secondary">Agregar</button>
+        </div>
+        <div class="table-frame">
+          <table id="tableCuentasCobrar">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Monto</th>
+                <th>Vence</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="cards-view" id="cardsCuentasCobrar"></div>
+      </section>
+
+      <section id="cuentasPagar" class="panel-section">
+        <div class="section-header">
+          <div>
+            <h2>Cuentas por pagar</h2>
+          </div>
+          <button data-add="cuentasPagar" class="button secondary">Agregar</button>
+        </div>
+        <div class="table-frame">
+          <table id="tableCuentasPagar">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Proveedor</th>
+                <th>Monto</th>
+                <th>Vence</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="cards-view" id="cardsCuentasPagar"></div>
+      </section>
+
+      <section id="proveedores" class="panel-section">
+        <div class="section-header">
+          <div>
+            <h2>Proveedores</h2>
+          </div>
+          <button data-add="proveedores" class="button secondary">Agregar</button>
+        </div>
+        <div class="table-frame">
+          <table id="tableProveedores">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Contacto</th>
+                <th>Teléfono</th>
+                <th>Servicios</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="cards-view" id="cardsProveedores"></div>
       </section>
 
       <section id="nomina" class="panel-section">
