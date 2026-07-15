@@ -1,0 +1,152 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Admin Ropa</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <h1>Admin Ropa</h1>
+      <div class="top-actions">
+        <button id="downloadCsv" class="button primary">Exportar</button>
+        <button id="menuToggle" class="hamburger-button" aria-expanded="false" aria-label="Abrir menú">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </header>
+
+    <nav class="tabs" id="mobileMenu" aria-hidden="true">
+      <button class="tab active" data-section="dashboard">Resumen</button>
+      <button class="tab" data-section="inversion">Inversión</button>
+      <button class="tab" data-section="ventas">Ventas</button>
+      <button class="tab" data-section="gastos">Gastos</button>
+      <button class="tab" data-section="nomina">Nómina</button>
+    </nav>
+
+    <main class="content">
+      <section id="dashboard" class="panel-section active">
+        <div class="stats-grid">
+          <article class="stat-card">
+            <span>Ventas</span>
+            <strong id="totalSales">0</strong>
+          </article>
+          <article class="stat-card">
+            <span>Gastos</span>
+            <strong id="totalExpenses">0</strong>
+          </article>
+          <article class="stat-card">
+            <span>Inversión</span>
+            <strong id="totalInvestment">0</strong>
+          </article>
+          <article class="stat-card">
+            <span>Nómina</span>
+            <strong id="totalPayroll">0</strong>
+          </article>
+        </div>
+      </section>
+
+      <section id="inversion" class="panel-section">
+        <div class="section-header">
+          <div>
+            <h2>Inversión</h2>
+          </div>
+          <button data-add="inversion" class="button secondary">Agregar</button>
+        </div>
+        <div class="table-frame">
+          <table id="tableInversion">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Producto</th>
+                <th>Cant.</th>
+                <th>Costo</th>
+                <th>%</th>
+                <th>Precio</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="ventas" class="panel-section">
+        <div class="section-header">
+          <div>
+            <h2>Ventas</h2>
+          </div>
+          <button data-add="ventas" class="button secondary">Agregar</button>
+        </div>
+        <div class="table-frame">
+          <table id="tableVentas">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Producto</th>
+                <th>Cant.</th>
+                <th>Pago</th>
+                <th>P.I/P.C</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="gastos" class="panel-section">
+        <div class="section-header">
+          <div>
+            <h2>Gastos</h2>
+          </div>
+          <button data-add="gastos" class="button secondary">Agregar</button>
+        </div>
+        <div class="table-frame">
+          <table id="tableGastos">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Producto</th>
+                <th>Cant.</th>
+                <th>Costo</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="nomina" class="panel-section">
+        <div class="section-header">
+          <div>
+            <h2>Nómina</h2>
+          </div>
+          <button data-add="nomina" class="button secondary">Agregar</button>
+        </div>
+        <div class="table-frame">
+          <table id="tableNomina">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Sueldo</th>
+                <th>Pago</th>
+                <th>Obs.</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
