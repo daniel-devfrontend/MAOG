@@ -16,6 +16,8 @@ const sectionButtons = document.querySelectorAll('.tab');
 const sections = document.querySelectorAll('.panel-section');
 const addButtons = document.querySelectorAll('[data-add]');
 const downloadCsvButton = document.getElementById('downloadCsv');
+const hamburgerToggle = document.getElementById('hamburgerToggle');
+const mobileMenu = document.getElementById('mobileMenu');
 const tables = {
   inversion: document.querySelector('#tableInversion tbody'),
   ventas: document.querySelector('#tableVentas tbody'),
@@ -309,8 +311,18 @@ function downloadCsv() {
   document.body.removeChild(link);
 }
 
-sectionButtons.forEach(button => button.addEventListener('click', switchSection));
-addButtons.forEach(button => button.addEventListener('click', () => addRow(button.dataset.add)));
-downloadCsvButton.addEventListener('click', downloadCsv);
+sectionButtons.forEach(button => button.addEventListener('click', event => {
+    switchSection(event);
+    mobileMenu.classList.remove('open');
+    hamburgerToggle.setAttribute('aria-expanded', 'false');
+    mobileMenu.setAttribute('aria-hidden', 'true');
+  }));
+  hamburgerToggle.addEventListener('click', () => {
+    const isOpen = mobileMenu.classList.toggle('open');
+    hamburgerToggle.setAttribute('aria-expanded', String(isOpen));
+    mobileMenu.setAttribute('aria-hidden', String(!isOpen));
+  });
+  addButtons.forEach(button => button.addEventListener('click', () => addRow(button.dataset.add)));
+  downloadCsvButton.addEventListener('click', downloadCsv);
 
 renderAll();

@@ -14,10 +14,17 @@
         <h1>Control de ventas e inventario</h1>
         <p>Registra inversiones, ventas, gastos y nómina. Todo guardado en tu teléfono.</p>
       </div>
-      <button id="downloadCsv" class="button primary">Exportar CSV</button>
+      <div class="topbar-actions">
+        <button id="hamburgerToggle" class="hamburger" aria-label="Abrir menú">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <button id="downloadCsv" class="button primary">Exportar CSV</button>
+      </div>
     </header>
 
-    <nav class="tabs">
+    <nav class="tabs" id="mobileMenu" aria-hidden="true">
       <button class="tab active" data-section="dashboard">Resumen</button>
       <button class="tab" data-section="inversion">Inversión</button>
       <button class="tab" data-section="ventas">Ventas</button>

@@ -57,11 +57,56 @@ body {
   font-size: 0.98rem;
   line-height: 1.7;
 }
-.tabs {
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hamburger {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.05);
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+.hamburger span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: #fff;
+  border-radius: 999px;
+  transition: transform 0.2s ease;
+}
+.hamburger span:nth-child(1) {
+  transform: translateY(-5px);
+}
+.hamburger span:nth-child(3) {
+  transform: translateY(5px);
+}
+.tabs {
+  position: fixed;
+  inset: 88px 16px auto 16px;
+  z-index: 20;
+  display: grid;
   gap: 10px;
-  padding: 18px 20px 0;
+  padding: 18px;
+  background: rgba(17, 24, 39, 0.96);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 24px;
+  transform: scaleY(0);
+  transform-origin: top;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.22s ease, opacity 0.22s ease;
+}
+.tabs.open {
+  transform: scaleY(1);
+  opacity: 1;
+  pointer-events: auto;
 }
 .tab {
   border-radius: 16px;
