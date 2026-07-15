@@ -368,9 +368,6 @@ body {
   .table-frame {
     overflow-x: auto;
   }
-  .table-frame table {
-    min-width: 700px;
-  }
   .draft-row {
     display: block;
     margin-bottom: 14px;
