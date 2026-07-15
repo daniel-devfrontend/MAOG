@@ -13,7 +13,7 @@
         <span class="eyebrow">Admin Ropa</span>
         <div class="brand-titles">
           <h1>Control de ventas e inventario</h1>
-          <p>Registra inversiones, ventas, gastos y nómina. Todo guardado en tu teléfono.</p>
+          <p>Registra inversiones, ventas, gastos y nómina de forma rápida desde tu teléfono.</p>
         </div>
       </div>
       <div class="topbar-actions">
@@ -29,7 +29,7 @@
     <div class="nav-overlay" id="mobileMenu" aria-hidden="true">
       <div class="nav-panel">
         <div class="nav-top">
-          <span class="nav-title">Navegación</span>
+          <span class="nav-title">Menú</span>
           <button id="navClose" class="icon-button" aria-label="Cerrar menú">×</button>
         </div>
         <nav class="nav-list">
@@ -66,12 +66,12 @@
             <strong id="totalProfit">$0.00</strong>
           </article>
           <article class="stat-card">
-            <span>Inventario disponible</span>
+            <span>Inventario</span>
             <strong id="totalInventory">0 uds</strong>
           </article>
         </div>
         <div class="dashboard-note">
-          <p>Esta app guarda toda la información localmente en el navegador. Nada se pierde a menos que tú lo elimines.</p>
+          <p>Esta app guarda los datos en tu navegador y mantiene tu control de ventas, inversiones y gastos sin complicaciones.</p>
         </div>
       </section>
 
@@ -79,102 +79,44 @@
         <div class="section-header">
           <div>
             <h2>Inversión</h2>
-            <p>Registra compras de producto y calcula el precio automáticamente.</p>
+            <p>Registra compras de producto y obtén precio automático.</p>
           </div>
-          <button data-add="inversion" class="button secondary">Agregar</button>
+          <button data-add="inversion" class="button secondary">Nuevo</button>
         </div>
-        <div class="table-frame">
-          <table id="tableInversion">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Producto</th>
-                <th>Cant.</th>
-                <th>Costo</th>
-                <th>%</th>
-                <th>Precio</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
+        <div class="section-body" id="bodyInversion"></div>
       </section>
 
       <section id="ventas" class="panel-section">
         <div class="section-header">
           <div>
             <h2>Ventas</h2>
-            <p>Controla cada venta, método de pago y estado.</p>
+            <p>Registra ventas rápidas, método de pago y estado.</p>
           </div>
-          <button data-add="ventas" class="button secondary">Agregar</button>
+          <button data-add="ventas" class="button secondary">Nuevo</button>
         </div>
-        <div class="table-frame">
-          <table id="tableVentas">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Cliente</th>
-                <th>Producto</th>
-                <th>Cant.</th>
-                <th>Precio</th>
-                <th>Total</th>
-                <th>Pago</th>
-                <th>P.I / P.C</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
+        <div class="section-body" id="bodyVentas"></div>
       </section>
 
       <section id="gastos" class="panel-section">
         <div class="section-header">
           <div>
             <h2>Gastos</h2>
-            <p>Registra los costos por unidad para mantener el flujo controlado.</p>
+            <p>Registra costos y controla tu flujo.</p>
           </div>
-          <button data-add="gastos" class="button secondary">Agregar</button>
+          <button data-add="gastos" class="button secondary">Nuevo</button>
         </div>
-        <div class="table-frame">
-          <table id="tableGastos">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Producto</th>
-                <th>Cant.</th>
-                <th>Costo / unidad</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
+        <div class="section-body" id="bodyGastos"></div>
       </section>
 
       <section id="nomina" class="panel-section">
         <div class="section-header">
           <div>
             <h2>Nómina</h2>
-            <p>Registra pagos al personal y mantén control de tus salarios.</p>
+            <p>Controla pagos al personal con registros simples.</p>
           </div>
-          <button data-add="nomina" class="button secondary">Agregar</button>
+          <button data-add="nomina" class="button secondary">Nuevo</button>
         </div>
-        <div class="table-frame">
-          <table id="tableNomina">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Sueldo</th>
-                <th>Método de pago</th>
-                <th>Observaciones</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
+        <div class="section-body" id="bodyNomina"></div>
       </section>
     </main>
   </div>

@@ -19,11 +19,11 @@ const downloadCsvButton = document.getElementById('downloadCsv');
 const hamburgerToggle = document.getElementById('hamburgerToggle');
 const navClose = document.getElementById('navClose');
 const mobileMenu = document.getElementById('mobileMenu');
-const tables = {
-  inversion: document.querySelector('#tableInversion tbody'),
-  ventas: document.querySelector('#tableVentas tbody'),
-  gastos: document.querySelector('#tableGastos tbody'),
-  nomina: document.querySelector('#tableNomina tbody')
+const sectionBodies = {
+  inversion: document.getElementById('bodyInversion'),
+  ventas: document.getElementById('bodyVentas'),
+  gastos: document.getElementById('bodyGastos'),
+  nomina: document.getElementById('bodyNomina')
 };
 const totals = {
   totalSales: document.getElementById('totalSales'),
@@ -53,16 +53,13 @@ function formatMoney(value) {
 }
 
 function calculateTotals() {
-  const sales = state.ventas.reduce((sum, item) => {
-    const total = Number(item.total);
-    if (!Number.isNaN(total) && total !== 0) return sum + total;
-    return sum + ((Number(item.cantidad) || 0) * (Number(item.precioUnitario) || 0));
-  }, 0);
+  const sales = state.ventas.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
   const investment = state.inversion.reduce((sum, item) => sum + (Number(item.costo) || 0) * (Number(item.cantidad) || 0), 0);
   const expenses = state.gastos.reduce((sum, item) => sum + (Number(item.costoUnidad) || 0) * (Number(item.cantidad) || 0), 0);
   const payroll = state.nomina.reduce((sum, item) => sum + (Number(item.sueldo) || 0), 0);
   const profit = sales - (investment + expenses + payroll);
   const inventoryCount = state.inversion.reduce((sum, item) => sum + (Number(item.cantidad) || 0), 0);
+
   totals.totalSales.textContent = formatMoney(sales);
   totals.totalInvestment.textContent = formatMoney(investment);
   totals.totalExpenses.textContent = formatMoney(expenses);
@@ -89,121 +86,98 @@ function getSectionFields(section) {
     case 'inversion':
       return [
         { key: 'fecha', label: 'Fecha', type: 'date' },
-        { key: 'producto', label: 'Producto' },
+        { key: 'producto', label: 'Producto', type: 'text', placeholder: 'Ej. Jeans' },
         { key: 'cantidad', label: 'Cantidad', type: 'number', placeholder: '0' },
-        { key: 'costo', label: 'Costo', type: 'number', placeholder: '0.00', prefix: '$' },
-        { key: 'porcentaje', label: 'Ganancia (%)', type: 'number', placeholder: '0', suffix: '%' },
-        { key: 'precio', label: 'Precio', type: 'text', readOnly: true, prefix: '$' }
+        { key: 'costo', label: 'Costo unidad', type: 'number', placeholder: '0.00' },
+        { key: 'porcentaje', label: 'Margen (%)', type: 'number', placeholder: '20' },
+        { key: 'precio', label: 'Precio venta', type: 'text', readOnly: true }
       ];
     case 'ventas':
       return [
         { key: 'fecha', label: 'Fecha', type: 'date' },
-        { key: 'cliente', label: 'Cliente' },
-        { key: 'producto', label: 'Producto' },
+        { key: 'cliente', label: 'Cliente', type: 'text', placeholder: 'Nombre' },
+        { key: 'producto', label: 'Producto', type: 'text', placeholder: 'Artículo' },
         { key: 'cantidad', label: 'Cantidad', type: 'number', placeholder: '0' },
-        { key: 'precioUnitario', label: 'Precio unitario', type: 'number', placeholder: '0.00', prefix: '$' },
-        { key: 'total', label: 'Total', type: 'text', prefix: '$', readOnly: true },
+        { key: 'precioUnitario', label: 'Precio unidad', type: 'number', placeholder: '0.00' },
+        { key: 'total', label: 'Total', type: 'text', readOnly: true },
         { key: 'metodoPago', label: 'Método de pago', type: 'select', options: ['Pago móvil', 'Efectivo'] },
-        { key: 'piPc', label: 'P.I / P.C', type: 'select', options: ['Pago inmediato', 'Por cobrar'] }
+        { key: 'piPc', label: 'Estado', type: 'select', options: ['Pago inmediato', 'Por cobrar'] }
       ];
     case 'gastos':
       return [
         { key: 'fecha', label: 'Fecha', type: 'date' },
-        { key: 'producto', label: 'Producto' },
+        { key: 'producto', label: 'Concepto', type: 'text', placeholder: 'Transporte' },
         { key: 'cantidad', label: 'Cantidad', type: 'number', placeholder: '0' },
-        { key: 'costoUnidad', label: 'Costo por unidad', type: 'number', placeholder: '0.00', prefix: '$' }
+        { key: 'costoUnidad', label: 'Costo unidad', type: 'number', placeholder: '0.00' }
       ];
     case 'nomina':
       return [
         { key: 'fecha', label: 'Fecha', type: 'date' },
-        { key: 'sueldo', label: 'Sueldo', type: 'number', placeholder: '0.00', prefix: '$' },
+        { key: 'sueldo', label: 'Sueldo', type: 'number', placeholder: '0.00' },
         { key: 'metodoPago', label: 'Método de pago', type: 'select', options: ['Pago móvil', 'Efectivo'] },
-        { key: 'observaciones', label: 'Observaciones', placeholder: 'Descripción' }
+        { key: 'observaciones', label: 'Observaciones', type: 'text', placeholder: 'Descripción' }
       ];
     default:
       return [];
   }
 }
 
-function createInputCell(value = '', field, onChange) {
-  const td = document.createElement('td');
-  if (field.type === 'select') {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'option-buttons';
-    const options = field.options || [];
-    options.forEach(option => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'option-button';
-      button.textContent = option;
-      if (value === option) button.classList.add('active');
-      button.addEventListener('click', () => {
-        onChange && onChange(option);
-      });
-      wrapper.appendChild(button);
-    });
-    td.appendChild(wrapper);
-    return td;
-  }
-
-  const input = document.createElement('input');
-  input.type = field.type || 'text';
-  input.value = value;
+function createInputField(field, value, onChange) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'compact-field';
+  const label = document.createElement('label');
+  label.textContent = field.label;
+  const input = field.type === 'select' ? document.createElement('select') : document.createElement('input');
+  input.type = field.type === 'select' ? 'text' : field.type || 'text';
+  input.value = value || '';
   input.placeholder = field.placeholder || '';
-  if (field.readOnly) {
-    input.readOnly = true;
-    input.tabIndex = -1;
-    input.style.background = 'rgba(255,255,255,0.08)';
+  input.disabled = Boolean(field.readOnly);
+  input.addEventListener('input', event => onChange(event.target.value));
+  if (field.type === 'select') {
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Selecciona...';
+    input.appendChild(defaultOption);
+    field.options.forEach(option => {
+      const optionElement = document.createElement('option');
+      optionElement.value = option;
+      optionElement.textContent = option;
+      optionElement.selected = value === option;
+      input.appendChild(optionElement);
+    });
   }
-  if (field.prefix || field.suffix) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'input-cell';
-    if (field.prefix) {
-      const prefix = document.createElement('span');
-      prefix.className = 'input-prefix';
-      prefix.textContent = field.prefix;
-      wrapper.appendChild(prefix);
-    }
-    wrapper.appendChild(input);
-    if (field.suffix) {
-      const suffix = document.createElement('span');
-      suffix.className = 'input-suffix';
-      suffix.textContent = field.suffix;
-      wrapper.appendChild(suffix);
-    }
-    td.appendChild(wrapper);
-  } else {
-    td.appendChild(input);
-  }
-  if (onChange) {
-    input.addEventListener('input', event => onChange(event.target.value));
-  }
-  return td;
+  wrapper.appendChild(label);
+  wrapper.appendChild(input);
+  return wrapper;
 }
 
-function formatDisplayValue(itemValue, field) {
-  if (itemValue === undefined || itemValue === null || itemValue === '') {
-    return '-';
-  }
-  return `${field.prefix || ''}${itemValue}${field.suffix || ''}`;
-}
-
-function createRow(section, item, index) {
+function createItemCard(section, item, index) {
+  const card = document.createElement('article');
+  card.className = 'item-card';
   const fields = getSectionFields(section);
-  const tr = document.createElement('tr');
   fields.forEach(field => {
-    const td = document.createElement('td');
-    td.textContent = formatDisplayValue(item[field.key], field);
-    tr.appendChild(td);
+    if (field.key === 'total' && !item[field.key]) return;
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    const caption = document.createElement('span');
+    caption.textContent = field.label;
+    const value = document.createElement('strong');
+    let text = item[field.key] || '-';
+    if (field.type === 'date' && text) text = text;
+    if ((field.key === 'precio' || field.key === 'total' || field.key === 'costo' || field.key === 'costoUnidad' || field.key === 'precioUnitario' || field.key === 'sueldo') && text !== '-') {
+      text = formatMoney(Number(text) || 0);
+    }
+    value.textContent = text;
+    row.appendChild(caption);
+    row.appendChild(value);
+    card.appendChild(row);
   });
-  const actionTd = document.createElement('td');
+  const actions = document.createElement('div');
+  actions.className = 'item-actions';
   const editBtn = document.createElement('button');
   editBtn.className = 'button secondary';
   editBtn.textContent = 'Editar';
-  editBtn.addEventListener('click', () => {
-    drafts[section] = { mode: 'edit', index, item: { ...item } };
-    renderAll();
-  });
+  editBtn.addEventListener('click', () => openDraft(section, 'edit', { ...item }, index));
   const deleteBtn = document.createElement('button');
   deleteBtn.className = 'button secondary';
   deleteBtn.textContent = 'Eliminar';
@@ -212,79 +186,103 @@ function createRow(section, item, index) {
     saveState();
     renderAll();
   });
-  actionTd.appendChild(editBtn);
-  actionTd.appendChild(deleteBtn);
-  tr.appendChild(actionTd);
-  return tr;
+  actions.appendChild(editBtn);
+  actions.appendChild(deleteBtn);
+  card.appendChild(actions);
+  return card;
 }
 
-function renderTable(section) {
-  const tbody = tables[section];
-  tbody.innerHTML = '';
-  const draft = drafts[section];
+function createForm(section, draft) {
+  const wrapper = document.createElement('article');
+  wrapper.className = 'form-card';
   const fields = getSectionFields(section);
-  if (draft) {
-    const tr = document.createElement('tr');
-    fields.forEach(field => {
-      const td = createInputCell(draft.item[field.key] ?? '', field, value => {
-        draft.item[field.key] = value;
-        if (section === 'inversion' && ['costo', 'porcentaje', 'cantidad'].includes(field.key)) {
-          const costo = Number(draft.item.costo) || 0;
-          const porcentaje = Number(draft.item.porcentaje) || 0;
-          draft.item.precio = (costo * (1 + porcentaje / 100)).toFixed(2);
-        }
-        if (section === 'ventas' && ['cantidad', 'precioUnitario'].includes(field.key)) {
-          const cantidad = Number(draft.item.cantidad) || 0;
-          const precioUnitario = Number(draft.item.precioUnitario) || 0;
-          draft.item.total = (cantidad * precioUnitario).toFixed(2);
-        }
-        renderAll();
-      });
-      tr.appendChild(td);
-    });
-    const actionTd = document.createElement('td');
-    const saveBtn = document.createElement('button');
-    saveBtn.className = 'button primary';
-    saveBtn.textContent = 'Guardar';
-    saveBtn.addEventListener('click', () => {
-      if (draft.mode === 'edit') {
-        state[section][draft.index] = { ...draft.item };
-      } else {
-        state[section].push({ ...draft.item });
+  fields.forEach(field => {
+    const fieldValue = draft.item[field.key] || '';
+    const inputField = createInputField(field, fieldValue, value => {
+      draft.item[field.key] = value;
+      if (section === 'inversion' && ['costo', 'porcentaje'].includes(field.key)) {
+        const costo = Number(draft.item.costo) || 0;
+        const porcentaje = Number(draft.item.porcentaje) || 0;
+        draft.item.precio = (costo * (1 + porcentaje / 100)).toFixed(2);
       }
-      drafts[section] = null;
-      saveState();
-      renderAll();
+      if (section === 'ventas' && ['cantidad', 'precioUnitario'].includes(field.key)) {
+        const cantidad = Number(draft.item.cantidad) || 0;
+        const precioUnitario = Number(draft.item.precioUnitario) || 0;
+        draft.item.total = (cantidad * precioUnitario).toFixed(2);
+      }
     });
-    const cancelBtn = document.createElement('button');
-    cancelBtn.className = 'button secondary';
-    cancelBtn.textContent = 'Cancelar';
-    cancelBtn.addEventListener('click', () => {
-      drafts[section] = null;
-      renderAll();
-    });
-    actionTd.appendChild(saveBtn);
-    actionTd.appendChild(cancelBtn);
-    tr.appendChild(actionTd);
-    tbody.appendChild(tr);
+    wrapper.appendChild(inputField);
+  });
+
+  const actionRow = document.createElement('div');
+  actionRow.className = 'action-row';
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'button primary';
+  saveBtn.textContent = 'Guardar';
+  saveBtn.addEventListener('click', () => {
+    if (draft.mode === 'edit') {
+      state[section][draft.index] = { ...draft.item };
+    } else {
+      state[section].push({ ...draft.item });
+    }
+    drafts[section] = null;
+    saveState();
+    renderAll();
+  });
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'button secondary';
+  cancelBtn.textContent = 'Cancelar';
+  cancelBtn.addEventListener('click', () => {
+    drafts[section] = null;
+    renderAll();
+  });
+  actionRow.appendChild(saveBtn);
+  actionRow.appendChild(cancelBtn);
+  wrapper.appendChild(actionRow);
+  return wrapper;
+}
+
+function renderSection(section) {
+  const container = sectionBodies[section];
+  container.innerHTML = '';
+  const draft = drafts[section];
+  if (draft) {
+    container.appendChild(createForm(section, draft));
   }
-  state[section].forEach((item, index) => tbody.appendChild(createRow(section, item, index)));
+  if (!state[section].length) {
+    const empty = document.createElement('article');
+    empty.className = 'empty-card';
+    empty.innerHTML = `<span>Sin registros aún</span><strong>Agrega tu primer registro</strong>`;
+    container.appendChild(empty);
+    return;
+  }
+  state[section].forEach((item, index) => container.appendChild(createItemCard(section, item, index)));
 }
 
 function renderAll() {
-  Object.keys(tables).forEach(renderTable);
+  Object.keys(sectionBodies).forEach(renderSection);
   calculateTotals();
+  updateNavActive();
+}
+
+function openDraft(section, mode = 'new', item = null, index = null) {
+  drafts[section] = { mode, index, item: item ? { ...item } : getBlankEntry(section) };
+  renderSection(section);
 }
 
 function addRow(section) {
-  drafts[section] = { mode: 'new', item: getBlankEntry(section) };
-  renderAll();
+  openDraft(section, 'new');
 }
 
 function switchSection(event) {
   sectionButtons.forEach(button => button.classList.toggle('active', button === event.currentTarget));
   const target = event.currentTarget.dataset.section;
   sections.forEach(section => section.id === target ? section.classList.add('active') : section.classList.remove('active'));
+}
+
+function updateNavActive() {
+  const activeId = Array.from(sections).find(section => section.classList.contains('active'))?.id;
+  sectionButtons.forEach(button => button.classList.toggle('active', button.dataset.section === activeId));
 }
 
 function buildCsv() {
