@@ -70,7 +70,7 @@ function calculatePrecio(costo, porcentaje) {
   const percentValue = Number(porcentaje) || 0;
   return costValue * (1 + percentValue / 100);
 }
-function createInputCell(value = '', type = 'text', placeholder = '', suffix = '', readOnly = false, label = '') {
+function createInputCell(value = '', type = 'text', placeholder = '', prefix = '', suffix = '', readOnly = false, label = '') {
   const td = document.createElement('td');
   if (label) td.dataset.label = label;
   const input = document.createElement('input');
@@ -81,25 +81,39 @@ function createInputCell(value = '', type = 'text', placeholder = '', suffix = '
     input.readOnly = true;
     input.tabIndex = -1;
   }
-  if (suffix) {
+  if (prefix || suffix) {
     const wrapper = document.createElement('div');
     wrapper.className = 'input-cell';
-    const suffixSpan = document.createElement('span');
-    suffixSpan.className = 'input-suffix';
-    suffixSpan.textContent = suffix;
+    if (prefix) {
+      const prefixSpan = document.createElement('span');
+      prefixSpan.className = 'input-prefix';
+      prefixSpan.textContent = prefix;
+      wrapper.appendChild(prefixSpan);
+    }
     wrapper.appendChild(input);
-    wrapper.appendChild(suffixSpan);
+    if (suffix) {
+      const suffixSpan = document.createElement('span');
+      suffixSpan.className = 'input-suffix';
+      suffixSpan.textContent = suffix;
+      wrapper.appendChild(suffixSpan);
+    }
     td.appendChild(wrapper);
   } else {
     td.appendChild(input);
   }
   return td;
 }
-function createDisplayCell(value = '', label = '') {
+function createDisplayCell(value = '', label = '', prefix = '', suffix = '') {
   const td = document.createElement('td');
   if (label) td.dataset.label = label;
-  td.textContent = value;
+  td.textContent = `${prefix || ''}${value || ''}${suffix || ''}`;
   return td;
+}
+function formatFieldValue(value, field) {
+  if (value === undefined || value === null || value === '') {
+    return '-';
+  }
+  return `${field.prefix || ''}${value}${field.suffix || ''}`;
 }
 function getBlankEntry(section) {
   return getSectionFields(section).reduce((entry, field) => {
@@ -171,9 +185,9 @@ function getSectionFields(section) {
         { key: 'fecha', label: 'Fecha', type: 'date' },
         { key: 'producto', label: 'Producto' },
         { key: 'cantidad', label: 'Cantidad', type: 'number', placeholder: '0' },
-        { key: 'costo', label: 'Costo', type: 'number', placeholder: '0.00' },
+        { key: 'costo', label: 'Costo', type: 'number', placeholder: '0.00', prefix: '$' },
         { key: 'porcentaje', label: 'Ganancia (%)', type: 'number', placeholder: '0', suffix: '%' },
-        { key: 'precio', label: 'Precio', type: 'text', placeholder: '0.00', readOnly: true }
+        { key: 'precio', label: 'Precio', type: 'text', placeholder: '0.00', readOnly: true, prefix: '$' }
       ];
     case 'ventas':
       return [
@@ -189,12 +203,12 @@ function getSectionFields(section) {
         { key: 'fecha', label: 'Fecha', type: 'date' },
         { key: 'producto', label: 'Producto' },
         { key: 'cantidad', label: 'Cantidad', type: 'number', placeholder: '0' },
-        { key: 'costoUnidad', label: 'Costo por unidad', type: 'number', placeholder: '0.00' }
+        { key: 'costoUnidad', label: 'Costo por unidad', type: 'number', placeholder: '0.00', prefix: '$' }
       ];
     case 'nomina':
       return [
         { key: 'fecha', label: 'Fecha', type: 'date' },
-        { key: 'sueldo', label: 'Sueldo', type: 'number', placeholder: '0.00' },
+        { key: 'sueldo', label: 'Sueldo', type: 'number', placeholder: '0.00', prefix: '$' },
         { key: 'metodoPago', label: 'Método de pago' },
         { key: 'observaciones', label: 'Observaciones', placeholder: 'Descripción' }
       ];
@@ -259,39 +273,55 @@ function createDraftCard(section) {
     const labelEl = document.createElement('span');
     labelEl.textContent = field.label || field.key;
     row.appendChild(labelEl);
-    const input = document.createElement('input');
-    input.type = field.type || 'text';
-    input.value = draft.item[field.key] || '';
-    input.placeholder = field.placeholder || '';
-    if (field.readOnly) {
-      input.readOnly = true;
-      input.tabIndex = -1;
-      input.style.background = '#f3f4f6';
-    }
-    if (field.suffix) {
+
+    const createOptionGroup = (options, key) => {
       const wrapper = document.createElement('div');
-      wrapper.className = 'input-cell';
-      const suffixEl = document.createElement('span');
-      suffixEl.className = 'input-suffix';
-      suffixEl.textContent = field.suffix;
-      wrapper.appendChild(input);
-      wrapper.appendChild(suffixEl);
-      row.appendChild(wrapper);
-    } else {
-      row.appendChild(input);
-    }
-    if (input && !field.readOnly) {
-      input.addEventListener('input', event => {
-        draft.item[field.key] = event.target.value;
-        if (section === 'inversion' && (field.key === 'costo' || field.key === 'porcentaje')) {
-          draft.item.precio = calculatePrecio(draft.item.costo, draft.item.porcentaje).toFixed(2);
-          const priceField = fields.find(f => f.key === 'precio');
-          if (priceField) {
-            // no extra action needed, value updates automatically from draft.item
-          }
+      wrapper.className = 'option-buttons';
+      options.forEach(option => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'option-button';
+        button.textContent = option;
+        if (draft.item[key] === option) {
+          button.classList.add('active');
         }
+        button.addEventListener('click', () => {
+          draft.item[key] = option;
+          renderAll();
+        });
+        wrapper.appendChild(button);
       });
+      return wrapper;
+    };
+
+    let control;
+    if ((section === 'ventas' || section === 'nomina') && field.key === 'metodoPago') {
+      control = createOptionGroup(['Pago móvil', 'Efectivo'], 'metodoPago');
+    } else if (section === 'ventas' && field.key === 'piPc') {
+      control = createOptionGroup(['Pago inmediato', 'Por cobrar'], 'piPc');
+    } else {
+      control = createInputCell(
+        draft.item[field.key] || '',
+        field.type || 'text',
+        field.placeholder || '',
+        field.prefix || '',
+        field.suffix || '',
+        field.readOnly || false,
+        field.label || ''
+      );
+      const input = control.querySelector('input');
+      if (input && !field.readOnly) {
+        input.addEventListener('input', event => {
+          draft.item[field.key] = event.target.value;
+          if (section === 'inversion' && (field.key === 'costo' || field.key === 'porcentaje')) {
+            draft.item.precio = calculatePrecio(draft.item.costo, draft.item.porcentaje).toFixed(2);
+            renderAll();
+          }
+        });
+      }
     }
+
+    row.appendChild(control);
     card.appendChild(row);
   });
   const actions = document.createElement('div');
@@ -335,7 +365,7 @@ function renderCards(section) {
     const card = document.createElement('div');
     card.className = 'card-item';
     getSectionFields(section).forEach(field => {
-      card.appendChild(createCardRow(field.label || field.key, item[field.key] || '-'));
+      card.appendChild(createCardRow(field.label || field.key, formatFieldValue(item[field.key], field)));
     });
     card.appendChild(createCardActions(section, index));
     container.appendChild(card);
@@ -351,21 +381,64 @@ function renderTable(section) {
     row.className = 'draft-row';
     fields.forEach(field => {
       const value = draft.item[field.key] || '';
-      const cell = createInputCell(value, field.type || 'text', field.placeholder || '', field.suffix || '', field.readOnly || false, field.label || '');
-      const input = cell.querySelector('input');
-      if (input && !field.readOnly) {
-        input.addEventListener('input', event => {
-          draft.item[field.key] = event.target.value;
-          if (section === 'inversion' && (field.key === 'costo' || field.key === 'porcentaje')) {
-            draft.item.precio = calculatePrecio(draft.item.costo, draft.item.porcentaje).toFixed(2);
-            const priceIndex = fields.findIndex(f => f.key === 'precio');
-            const priceCell = row.querySelectorAll('td')[priceIndex];
-            const priceInput = priceCell ? priceCell.querySelector('input') : null;
-            if (priceInput) {
-              priceInput.value = draft.item.precio;
-            }
+      let cell;
+      if ((section === 'ventas' || section === 'nomina') && field.key === 'metodoPago') {
+        cell = document.createElement('td');
+        const wrapper = document.createElement('div');
+        wrapper.className = 'option-buttons';
+        ['Pago móvil', 'Efectivo'].forEach(option => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'option-button';
+          button.textContent = option;
+          if (value === option) {
+            button.classList.add('active');
           }
+          button.addEventListener('click', () => {
+            draft.item.metodoPago = option;
+            renderAll();
+          });
+          wrapper.appendChild(button);
         });
+        if (field.label) cell.dataset.label = field.label;
+        cell.appendChild(wrapper);
+      } else if (section === 'ventas' && field.key === 'piPc') {
+        cell = document.createElement('td');
+        const wrapper = document.createElement('div');
+        wrapper.className = 'option-buttons';
+        ['Pago inmediato', 'Por cobrar'].forEach(option => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'option-button';
+          button.textContent = option;
+          if (value === option) {
+            button.classList.add('active');
+          }
+          button.addEventListener('click', () => {
+            draft.item.piPc = option;
+            renderAll();
+          });
+          wrapper.appendChild(button);
+        });
+        if (field.label) cell.dataset.label = field.label;
+        cell.appendChild(wrapper);
+      } else {
+        cell = createInputCell(value, field.type || 'text', field.placeholder || '', field.prefix || '', field.suffix || '', field.readOnly || false, field.label || '');
+        const input = cell.querySelector('input');
+        if (input && !field.readOnly) {
+          input.addEventListener('input', event => {
+            draft.item[field.key] = event.target.value;
+            if (section === 'inversion' && (field.key === 'costo' || field.key === 'porcentaje')) {
+              draft.item.precio = calculatePrecio(draft.item.costo, draft.item.porcentaje).toFixed(2);
+              const priceIndex = fields.findIndex(f => f.key === 'precio');
+              const priceCell = row.querySelectorAll('td')[priceIndex];
+              const priceInput = priceCell ? priceCell.querySelector('input') : null;
+              if (priceInput) {
+                priceInput.value = draft.item.precio;
+              }
+            }
+          });
+        }
       }
       row.appendChild(cell);
     });
@@ -405,7 +478,7 @@ function renderTable(section) {
     const row = document.createElement('tr');
     fields.forEach(field => {
       const value = item[field.key] || '';
-      row.appendChild(createDisplayCell(value, field.label || ''));
+      row.appendChild(createDisplayCell(value, field.label || '', field.prefix || '', field.suffix || ''));
     });
     row.appendChild(createActionMenuCell(section, index, 'Acciones'));
     tbody.appendChild(row);
