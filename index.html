@@ -17,7 +17,7 @@
         </div>
       </div>
       <div class="topbar-actions">
-        <button id="hamburgerToggle" class="hamburger" aria-label="Abrir menú">
+        <button id="hamburgerToggle" class="hamburger" aria-label="Abrir menú" aria-expanded="false">
           <span></span>
           <span></span>
           <span></span>
@@ -26,13 +26,21 @@
       </div>
     </header>
 
-    <nav class="tabs" id="mobileMenu" aria-hidden="true">
-      <button class="tab active" data-section="dashboard">Resumen</button>
-      <button class="tab" data-section="inversion">Inversión</button>
-      <button class="tab" data-section="ventas">Ventas</button>
-      <button class="tab" data-section="gastos">Gastos</button>
-      <button class="tab" data-section="nomina">Nómina</button>
-    </nav>
+    <div class="nav-overlay" id="mobileMenu" aria-hidden="true">
+      <div class="nav-panel">
+        <div class="nav-top">
+          <span class="nav-title">Navegación</span>
+          <button id="navClose" class="icon-button" aria-label="Cerrar menú">×</button>
+        </div>
+        <nav class="nav-list">
+          <button class="tab active" data-section="dashboard">Resumen</button>
+          <button class="tab" data-section="inversion">Inversión</button>
+          <button class="tab" data-section="ventas">Ventas</button>
+          <button class="tab" data-section="gastos">Gastos</button>
+          <button class="tab" data-section="nomina">Nómina</button>
+        </nav>
+      </div>
+    </div>
 
     <main class="content">
       <section id="dashboard" class="panel-section active">

@@ -17,6 +17,7 @@ const sections = document.querySelectorAll('.panel-section');
 const addButtons = document.querySelectorAll('[data-add]');
 const downloadCsvButton = document.getElementById('downloadCsv');
 const hamburgerToggle = document.getElementById('hamburgerToggle');
+const navClose = document.getElementById('navClose');
 const mobileMenu = document.getElementById('mobileMenu');
 const tables = {
   inversion: document.querySelector('#tableInversion tbody'),
@@ -312,17 +313,33 @@ function downloadCsv() {
 }
 
 sectionButtons.forEach(button => button.addEventListener('click', event => {
-    switchSection(event);
+  switchSection(event);
+  mobileMenu.classList.remove('open');
+  hamburgerToggle.setAttribute('aria-expanded', 'false');
+  mobileMenu.setAttribute('aria-hidden', 'true');
+}));
+
+hamburgerToggle.addEventListener('click', () => {
+  const isOpen = mobileMenu.classList.toggle('open');
+  hamburgerToggle.setAttribute('aria-expanded', String(isOpen));
+  mobileMenu.setAttribute('aria-hidden', String(!isOpen));
+});
+
+navClose.addEventListener('click', () => {
+  mobileMenu.classList.remove('open');
+  hamburgerToggle.setAttribute('aria-expanded', 'false');
+  mobileMenu.setAttribute('aria-hidden', 'true');
+});
+
+mobileMenu.addEventListener('click', event => {
+  if (event.target === mobileMenu) {
     mobileMenu.classList.remove('open');
     hamburgerToggle.setAttribute('aria-expanded', 'false');
     mobileMenu.setAttribute('aria-hidden', 'true');
-  }));
-  hamburgerToggle.addEventListener('click', () => {
-    const isOpen = mobileMenu.classList.toggle('open');
-    hamburgerToggle.setAttribute('aria-expanded', String(isOpen));
-    mobileMenu.setAttribute('aria-hidden', String(!isOpen));
-  });
-  addButtons.forEach(button => button.addEventListener('click', () => addRow(button.dataset.add)));
-  downloadCsvButton.addEventListener('click', downloadCsv);
+  }
+});
+
+addButtons.forEach(button => button.addEventListener('click', () => addRow(button.dataset.add)));
+downloadCsvButton.addEventListener('click', downloadCsv);
 
 renderAll();
