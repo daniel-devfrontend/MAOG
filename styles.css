@@ -139,10 +139,19 @@ body {
   justify-content: space-between;
   gap: 12px;
   align-items: center;
+  flex-wrap: wrap;
+}
+.section-header > div {
+  min-width: 0;
+  flex: 1 1 auto;
 }
 .section-header h2 {
   margin: 0;
   font-size: 1.15rem;
+  min-width: 0;
+}
+.button.secondary {
+  flex-shrink: 0;
 }
 .button {
   border-radius: 16px;
@@ -171,6 +180,7 @@ body {
   width: 100%;
   border-collapse: collapse;
   min-width: 0;
+  table-layout: fixed;
 }
 .table-frame thead {
   display: table-header-group;
@@ -182,6 +192,9 @@ body {
   text-align: left;
   vertical-align: middle;
   font-size: 0.95rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .table-frame th {
   color: #475569;
@@ -202,22 +215,53 @@ body {
 .table-frame td > .input-cell,
 .table-frame td > div {
   width: 100%;
+  min-width: 0;
 }
 .table-frame input {
   width: 100%;
+  min-width: 0;
   padding: 10px 12px;
   border-radius: 14px;
   border: 1px solid #e5e7eb;
   background: #f8fafc;
+  color: #111827;
+}
+.table-frame input::placeholder {
+  color: rgba(55, 65, 81, 0.6);
+}
+.table-frame input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.table-frame .input-cell {
+  align-items: center;
+}
+
+@media (max-width: 720px) {
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .section-header .button {
+    width: 100%;
+  }
 }
 .input-cell {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.input-cell input {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 .input-suffix {
   color: var(--muted);
   font-size: 0.9rem;
+  white-space: nowrap;
 }
 .draft-action-cell {
   display: flex;
@@ -314,17 +358,33 @@ body {
   .stats-grid {
     grid-template-columns: 1fr;
   }
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .section-header .button {
+    width: 100%;
+  }
 }
 @media (max-width: 520px) {
   .topbar {
     flex-direction: column;
     align-items: stretch;
   }
+  .topbar h1 {
+    font-size: 1.25rem;
+  }
+  .top-actions {
+    justify-content: space-between;
+  }
   .tabs {
     grid-template-columns: 1fr;
   }
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+  .table-frame {
+    padding: 0 4px;
   }
 }
 
