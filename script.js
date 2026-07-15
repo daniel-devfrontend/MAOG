@@ -210,6 +210,7 @@ function renderTable(section) {
   const fields = getSectionFields(section);
   if (draft) {
     const row = document.createElement('tr');
+    row.className = 'draft-row';
     fields.forEach(field => {
       const value = draft.item[field.key] || '';
       const cell = createInputCell(value, field.type || 'text', field.placeholder || '', field.suffix || '', field.readOnly || false, field.label || '');
