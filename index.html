@@ -3,71 +3,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin</title>
+  <title>Control Ropa - App Administrativa</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="page-shell">
     <header class="topbar">
-      <h1>Admin</h1>
-      <div class="top-actions">
-        <button id="downloadCsv" class="button primary">Exportar</button>
-        <button id="menuToggle" class="hamburger-button" aria-expanded="false" aria-label="Abrir menú">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
+      <div>
+        <span class="eyebrow">Admin Ropa</span>
+        <h1>Control de ventas e inventario</h1>
+        <p>Registra inversiones, ventas, gastos y nómina. Todo guardado en tu teléfono.</p>
       </div>
+      <button id="downloadCsv" class="button primary">Exportar CSV</button>
     </header>
 
-    <nav class="tabs" id="mobileMenu" aria-hidden="true">
+    <nav class="tabs">
       <button class="tab active" data-section="dashboard">Resumen</button>
       <button class="tab" data-section="inversion">Inversión</button>
-      <button class="tab" data-section="compras">Compras</button>
       <button class="tab" data-section="ventas">Ventas</button>
       <button class="tab" data-section="gastos">Gastos</button>
-      <button class="tab" data-section="inventario">Inventario</button>
-      <button class="tab" data-section="cuentasCobrar">Cuentas por cobrar</button>
-      <button class="tab" data-section="cuentasPagar">Cuentas por pagar</button>
-      <button class="tab" data-section="proveedores">Proveedores</button>
       <button class="tab" data-section="nomina">Nómina</button>
     </nav>
 
     <main class="content">
       <section id="dashboard" class="panel-section active">
-        <div class="stats-grid">
+        <div class="dashboard-grid">
           <article class="stat-card">
             <span>Ventas</span>
-            <strong id="totalSales">0</strong>
-          </article>
-          <article class="stat-card">
-            <span>Compras</span>
-            <strong id="totalPurchases">0</strong>
-          </article>
-          <article class="stat-card">
-            <span>Gastos</span>
-            <strong id="totalExpenses">0</strong>
+            <strong id="totalSales">$0.00</strong>
           </article>
           <article class="stat-card">
             <span>Inversión</span>
-            <strong id="totalInvestment">0</strong>
+            <strong id="totalInvestment">$0.00</strong>
           </article>
           <article class="stat-card">
-            <span>Inventario</span>
-            <strong id="totalInventory">0</strong>
-          </article>
-          <article class="stat-card">
-            <span>Cuentas x cobrar</span>
-            <strong id="totalReceivables">0</strong>
-          </article>
-          <article class="stat-card">
-            <span>Cuentas x pagar</span>
-            <strong id="totalPayables">0</strong>
+            <span>Gastos</span>
+            <strong id="totalExpenses">$0.00</strong>
           </article>
           <article class="stat-card">
             <span>Nómina</span>
-            <strong id="totalPayroll">0</strong>
+            <strong id="totalPayroll">$0.00</strong>
           </article>
+          <article class="stat-card">
+            <span>Utilidad neta</span>
+            <strong id="totalProfit">$0.00</strong>
+          </article>
+          <article class="stat-card">
+            <span>Inventario disponible</span>
+            <strong id="totalInventory">0 uds</strong>
+          </article>
+        </div>
+        <div class="dashboard-note">
+          <p>Esta app guarda toda la información localmente en el navegador. Nada se pierde a menos que tú lo elimines.</p>
         </div>
       </section>
 
@@ -75,6 +62,7 @@
         <div class="section-header">
           <div>
             <h2>Inversión</h2>
+            <p>Registra compras de producto y calcula el precio automáticamente.</p>
           </div>
           <button data-add="inversion" class="button secondary">Agregar</button>
         </div>
@@ -94,13 +82,13 @@
             <tbody></tbody>
           </table>
         </div>
-        <div class="cards-view" id="cardsInversion"></div>
       </section>
 
       <section id="ventas" class="panel-section">
         <div class="section-header">
           <div>
             <h2>Ventas</h2>
+            <p>Controla cada venta, método de pago y estado.</p>
           </div>
           <button data-add="ventas" class="button secondary">Agregar</button>
         </div>
@@ -112,47 +100,23 @@
                 <th>Cliente</th>
                 <th>Producto</th>
                 <th>Cant.</th>
+                <th>Precio</th>
+                <th>Total</th>
                 <th>Pago</th>
-                <th>P.I/P.C</th>
+                <th>P.I / P.C</th>
                 <th></th>
               </tr>
             </thead>
             <tbody></tbody>
           </table>
         </div>
-        <div class="cards-view" id="cardsVentas"></div>
-      </section>
-
-      <section id="compras" class="panel-section">
-        <div class="section-header">
-          <div>
-            <h2>Compras</h2>
-          </div>
-          <button data-add="compras" class="button secondary">Agregar</button>
-        </div>
-        <div class="table-frame">
-          <table id="tableCompras">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Proveedor</th>
-                <th>Producto</th>
-                <th>Cant.</th>
-                <th>Costo</th>
-                <th>Pago</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="cards-view" id="cardsCompras"></div>
       </section>
 
       <section id="gastos" class="panel-section">
         <div class="section-header">
           <div>
             <h2>Gastos</h2>
+            <p>Registra los costos por unidad para mantener el flujo controlado.</p>
           </div>
           <button data-add="gastos" class="button secondary">Agregar</button>
         </div>
@@ -163,118 +127,20 @@
                 <th>Fecha</th>
                 <th>Producto</th>
                 <th>Cant.</th>
-                <th>Costo</th>
+                <th>Costo / unidad</th>
                 <th></th>
               </tr>
             </thead>
             <tbody></tbody>
           </table>
         </div>
-        <div class="cards-view" id="cardsGastos"></div>
-      </section>
-
-      <section id="inventario" class="panel-section">
-        <div class="section-header">
-          <div>
-            <h2>Inventario</h2>
-          </div>
-          <button data-add="inventario" class="button secondary">Agregar</button>
-        </div>
-        <div class="table-frame">
-          <table id="tableInventario">
-            <thead>
-              <tr>
-                <th>Producto</th>
-                <th>Stock</th>
-                <th>Costo</th>
-                <th>Ubicación</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="cards-view" id="cardsInventario"></div>
-      </section>
-
-      <section id="cuentasCobrar" class="panel-section">
-        <div class="section-header">
-          <div>
-            <h2>Cuentas por cobrar</h2>
-          </div>
-          <button data-add="cuentasCobrar" class="button secondary">Agregar</button>
-        </div>
-        <div class="table-frame">
-          <table id="tableCuentasCobrar">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Cliente</th>
-                <th>Monto</th>
-                <th>Vence</th>
-                <th>Estado</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="cards-view" id="cardsCuentasCobrar"></div>
-      </section>
-
-      <section id="cuentasPagar" class="panel-section">
-        <div class="section-header">
-          <div>
-            <h2>Cuentas por pagar</h2>
-          </div>
-          <button data-add="cuentasPagar" class="button secondary">Agregar</button>
-        </div>
-        <div class="table-frame">
-          <table id="tableCuentasPagar">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Proveedor</th>
-                <th>Monto</th>
-                <th>Vence</th>
-                <th>Estado</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="cards-view" id="cardsCuentasPagar"></div>
-      </section>
-
-      <section id="proveedores" class="panel-section">
-        <div class="section-header">
-          <div>
-            <h2>Proveedores</h2>
-          </div>
-          <button data-add="proveedores" class="button secondary">Agregar</button>
-        </div>
-        <div class="table-frame">
-          <table id="tableProveedores">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Contacto</th>
-                <th>Teléfono</th>
-                <th>Servicios</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="cards-view" id="cardsProveedores"></div>
       </section>
 
       <section id="nomina" class="panel-section">
         <div class="section-header">
           <div>
             <h2>Nómina</h2>
+            <p>Registra pagos al personal y mantén control de tus salarios.</p>
           </div>
           <button data-add="nomina" class="button secondary">Agregar</button>
         </div>
@@ -284,18 +150,18 @@
               <tr>
                 <th>Fecha</th>
                 <th>Sueldo</th>
-                <th>Pago</th>
-                <th>Obs.</th>
+                <th>Método de pago</th>
+                <th>Observaciones</th>
                 <th></th>
               </tr>
             </thead>
             <tbody></tbody>
           </table>
         </div>
-        <div class="cards-view" id="cardsNomina"></div>
       </section>
     </main>
   </div>
+
   <script src="script.js"></script>
 </body>
 </html>

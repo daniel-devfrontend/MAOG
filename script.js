@@ -1,65 +1,36 @@
 ﻿const STORAGE_KEY = 'modapro-admin-data';
 const defaultData = {
   inversion: [],
-  compras: [],
   ventas: [],
   gastos: [],
-  inventario: [],
-  cuentasCobrar: [],
-  cuentasPagar: [],
-  proveedores: [],
   nomina: []
 };
 const state = loadState();
 const drafts = {
   inversion: null,
-  compras: null,
   ventas: null,
   gastos: null,
-  inventario: null,
-  cuentasCobrar: null,
-  cuentasPagar: null,
-  proveedores: null,
   nomina: null
 };
 const sectionButtons = document.querySelectorAll('.tab');
 const sections = document.querySelectorAll('.panel-section');
 const addButtons = document.querySelectorAll('[data-add]');
 const downloadCsvButton = document.getElementById('downloadCsv');
-const menuToggle = document.getElementById('menuToggle');
-const mobileMenu = document.getElementById('mobileMenu');
 const tables = {
   inversion: document.querySelector('#tableInversion tbody'),
-  compras: document.querySelector('#tableCompras tbody'),
   ventas: document.querySelector('#tableVentas tbody'),
   gastos: document.querySelector('#tableGastos tbody'),
-  inventario: document.querySelector('#tableInventario tbody'),
-  cuentasCobrar: document.querySelector('#tableCuentasCobrar tbody'),
-  cuentasPagar: document.querySelector('#tableCuentasPagar tbody'),
-  proveedores: document.querySelector('#tableProveedores tbody'),
   nomina: document.querySelector('#tableNomina tbody')
 };
 const totals = {
   totalSales: document.getElementById('totalSales'),
-  totalExpenses: document.getElementById('totalExpenses'),
   totalInvestment: document.getElementById('totalInvestment'),
-  totalPurchases: document.getElementById('totalPurchases'),
-  totalInventory: document.getElementById('totalInventory'),
-  totalReceivables: document.getElementById('totalReceivables'),
-  totalPayables: document.getElementById('totalPayables'),
-  totalPayroll: document.getElementById('totalPayroll')
+  totalExpenses: document.getElementById('totalExpenses'),
+  totalPayroll: document.getElementById('totalPayroll'),
+  totalProfit: document.getElementById('totalProfit'),
+  totalInventory: document.getElementById('totalInventory')
 };
-const cards = {
-  inversion: document.getElementById('cardsInversion'),
-  compras: document.getElementById('cardsCompras'),
-  ventas: document.getElementById('cardsVentas'),
-  gastos: document.getElementById('cardsGastos'),
-  inventario: document.getElementById('cardsInventario'),
-  cuentasCobrar: document.getElementById('cardsCuentasCobrar'),
-  cuentasPagar: document.getElementById('cardsCuentasPagar'),
-  proveedores: document.getElementById('cardsProveedores'),
-  nomina: document.getElementById('cardsNomina')
-};
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -69,147 +40,47 @@ function loadState() {
     return JSON.parse(JSON.stringify(defaultData));
   }
 }
+
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
+
 function formatMoney(value) {
   return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(value);
 }
+
 function calculateTotals() {
-  const inv = state.inversion.reduce((sum, item) => sum + (Number(item.costo) || 0) * (Number(item.cantidad) || 0), 0);
-  const purchases = state.compras.reduce((sum, item) => sum + (Number(item.costoUnidad) || 0) * (Number(item.cantidad) || 0), 0);
-  const exp = state.gastos.reduce((sum, item) => sum + (Number(item.costoUnidad) || 0) * (Number(item.cantidad) || 0), 0);
-  const inventoryValue = state.inventario.reduce((sum, item) => sum + (Number(item.costoUnidad) || 0) * (Number(item.stock) || 0), 0);
-  const receivables = state.cuentasCobrar.reduce((sum, item) => sum + (Number(item.monto) || 0), 0);
-  const payables = state.cuentasPagar.reduce((sum, item) => sum + (Number(item.monto) || 0), 0);
-  const payroll = state.nomina.reduce((sum, item) => sum + (Number(item.sueldo) || 0), 0);
-  const ventasTotal = state.ventas.reduce((sum, item) => {
-    const parts = item.piPc ? item.piPc.split('/').map(value => Number(value.trim())) : [];
-    const amount = parts.length === 2 ? (Number(parts[0]) || 0) + (Number(parts[1]) || 0) : 0;
-    return sum + amount;
+  const sales = state.ventas.reduce((sum, item) => {
+    const total = Number(item.total);
+    if (!Number.isNaN(total) && total !== 0) return sum + total;
+    return sum + ((Number(item.cantidad) || 0) * (Number(item.precioUnitario) || 0));
   }, 0);
-  totals.totalInvestment.textContent = formatMoney(inv);
-  totals.totalPurchases.textContent = formatMoney(purchases);
-  totals.totalExpenses.textContent = formatMoney(exp);
-  totals.totalInventory.textContent = formatMoney(inventoryValue);
-  totals.totalReceivables.textContent = formatMoney(receivables);
-  totals.totalPayables.textContent = formatMoney(payables);
+  const investment = state.inversion.reduce((sum, item) => sum + (Number(item.costo) || 0) * (Number(item.cantidad) || 0), 0);
+  const expenses = state.gastos.reduce((sum, item) => sum + (Number(item.costoUnidad) || 0) * (Number(item.cantidad) || 0), 0);
+  const payroll = state.nomina.reduce((sum, item) => sum + (Number(item.sueldo) || 0), 0);
+  const profit = sales - (investment + expenses + payroll);
+  const inventoryCount = state.inversion.reduce((sum, item) => sum + (Number(item.cantidad) || 0), 0);
+  totals.totalSales.textContent = formatMoney(sales);
+  totals.totalInvestment.textContent = formatMoney(investment);
+  totals.totalExpenses.textContent = formatMoney(expenses);
   totals.totalPayroll.textContent = formatMoney(payroll);
-  totals.totalSales.textContent = formatMoney(ventasTotal);
+  totals.totalProfit.textContent = formatMoney(profit);
+  totals.totalInventory.textContent = `${inventoryCount} uds`;
 }
-function calculatePrecio(costo, porcentaje) {
-  const costValue = Number(costo) || 0;
-  const percentValue = Number(porcentaje) || 0;
-  return costValue * (1 + percentValue / 100);
-}
-function createInputCell(value = '', type = 'text', placeholder = '', prefix = '', suffix = '', readOnly = false, label = '') {
-  const td = document.createElement('td');
-  if (label) td.dataset.label = label;
-  const input = document.createElement('input');
-  input.type = type;
-  input.value = value;
-  input.placeholder = placeholder;
-  if (readOnly) {
-    input.readOnly = true;
-    input.tabIndex = -1;
-  }
-  if (prefix || suffix) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'input-cell';
-    if (prefix) {
-      const prefixSpan = document.createElement('span');
-      prefixSpan.className = 'input-prefix';
-      prefixSpan.textContent = prefix;
-      wrapper.appendChild(prefixSpan);
-    }
-    wrapper.appendChild(input);
-    if (suffix) {
-      const suffixSpan = document.createElement('span');
-      suffixSpan.className = 'input-suffix';
-      suffixSpan.textContent = suffix;
-      wrapper.appendChild(suffixSpan);
-    }
-    td.appendChild(wrapper);
-  } else {
-    td.appendChild(input);
-  }
-  return td;
-}
-function createDisplayCell(value = '', label = '', prefix = '', suffix = '') {
-  const td = document.createElement('td');
-  if (label) td.dataset.label = label;
-  td.textContent = `${prefix || ''}${value || ''}${suffix || ''}`;
-  return td;
-}
-function formatFieldValue(value, field) {
-  if (value === undefined || value === null || value === '') {
-    return '-';
-  }
-  return `${field.prefix || ''}${value}${field.suffix || ''}`;
-}
+
 function getBlankEntry(section) {
-  return getSectionFields(section).reduce((entry, field) => {
-    entry[field.key] = '';
-    return entry;
+  const fields = {
+    inversion: ['fecha', 'producto', 'cantidad', 'costo', 'porcentaje', 'precio'],
+    ventas: ['fecha', 'cliente', 'producto', 'cantidad', 'precioUnitario', 'total', 'metodoPago', 'piPc'],
+    gastos: ['fecha', 'producto', 'cantidad', 'costoUnidad'],
+    nomina: ['fecha', 'sueldo', 'metodoPago', 'observaciones']
+  };
+  return fields[section].reduce((obj, key) => {
+    obj[key] = '';
+    return obj;
   }, {});
 }
-function createActionMenuCell(section, index, label = '') {
-  const td = document.createElement('td');
-  if (label) td.dataset.label = label;
-  td.className = 'action-cell';
 
-  const menuWrapper = document.createElement('div');
-  menuWrapper.className = 'menu-wrapper';
-
-  const menuButton = document.createElement('button');
-  menuButton.type = 'button';
-  menuButton.className = 'menu-trigger';
-  menuButton.setAttribute('aria-expanded', 'false');
-  menuButton.textContent = '⋯';
-  menuButton.addEventListener('click', event => {
-    event.stopPropagation();
-    const isOpen = menuWrapper.classList.toggle('open');
-    menuButton.setAttribute('aria-expanded', String(isOpen));
-  });
-
-  const menuList = document.createElement('div');
-  menuList.className = 'menu-list';
-
-  const editItem = document.createElement('button');
-  editItem.type = 'button';
-  editItem.className = 'menu-item';
-  editItem.textContent = 'Editar';
-  editItem.addEventListener('click', event => {
-    event.stopPropagation();
-    drafts[section] = {
-      mode: 'edit',
-      item: { ...state[section][index] },
-      index
-    };
-    menuWrapper.classList.remove('open');
-    menuButton.setAttribute('aria-expanded', 'false');
-    renderAll();
-  });
-
-  const deleteItem = document.createElement('button');
-  deleteItem.type = 'button';
-  deleteItem.className = 'menu-item';
-  deleteItem.textContent = 'Eliminar';
-  deleteItem.addEventListener('click', event => {
-    event.stopPropagation();
-    state[section].splice(index, 1);
-    menuWrapper.classList.remove('open');
-    menuButton.setAttribute('aria-expanded', 'false');
-    renderAll();
-  });
-
-  menuList.appendChild(editItem);
-  menuList.appendChild(deleteItem);
-  menuWrapper.appendChild(menuButton);
-  menuWrapper.appendChild(menuList);
-  td.appendChild(menuWrapper);
-  return td;
-}
 function getSectionFields(section) {
   switch (section) {
     case 'inversion':
@@ -219,7 +90,7 @@ function getSectionFields(section) {
         { key: 'cantidad', label: 'Cantidad', type: 'number', placeholder: '0' },
         { key: 'costo', label: 'Costo', type: 'number', placeholder: '0.00', prefix: '$' },
         { key: 'porcentaje', label: 'Ganancia (%)', type: 'number', placeholder: '0', suffix: '%' },
-        { key: 'precio', label: 'Precio', type: 'text', placeholder: '0.00', readOnly: true, prefix: '$' }
+        { key: 'precio', label: 'Precio', type: 'text', readOnly: true, prefix: '$' }
       ];
     case 'ventas':
       return [
@@ -227,17 +98,10 @@ function getSectionFields(section) {
         { key: 'cliente', label: 'Cliente' },
         { key: 'producto', label: 'Producto' },
         { key: 'cantidad', label: 'Cantidad', type: 'number', placeholder: '0' },
-        { key: 'metodoPago', label: 'Método de pago' },
-        { key: 'piPc', label: 'P.I / P.C', placeholder: 'P.I/P.C' }
-      ];
-    case 'compras':
-      return [
-        { key: 'fecha', label: 'Fecha', type: 'date' },
-        { key: 'proveedor', label: 'Proveedor' },
-        { key: 'producto', label: 'Producto' },
-        { key: 'cantidad', label: 'Cantidad', type: 'number', placeholder: '0' },
-        { key: 'costoUnidad', label: 'Costo por unidad', type: 'number', placeholder: '0.00', prefix: '$' },
-        { key: 'metodoPago', label: 'Método de pago' }
+        { key: 'precioUnitario', label: 'Precio unitario', type: 'number', placeholder: '0.00', prefix: '$' },
+        { key: 'total', label: 'Total', type: 'text', prefix: '$', readOnly: true },
+        { key: 'metodoPago', label: 'Método de pago', type: 'select', options: ['Pago móvil', 'Efectivo'] },
+        { key: 'piPc', label: 'P.I / P.C', type: 'select', options: ['Pago inmediato', 'Por cobrar'] }
       ];
     case 'gastos':
       return [
@@ -246,281 +110,141 @@ function getSectionFields(section) {
         { key: 'cantidad', label: 'Cantidad', type: 'number', placeholder: '0' },
         { key: 'costoUnidad', label: 'Costo por unidad', type: 'number', placeholder: '0.00', prefix: '$' }
       ];
-    case 'inventario':
-      return [
-        { key: 'producto', label: 'Producto' },
-        { key: 'stock', label: 'Stock', type: 'number', placeholder: '0' },
-        { key: 'costoUnidad', label: 'Costo por unidad', type: 'number', placeholder: '0.00', prefix: '$' },
-        { key: 'ubicacion', label: 'Ubicación' }
-      ];
-    case 'cuentasCobrar':
-      return [
-        { key: 'fecha', label: 'Fecha', type: 'date' },
-        { key: 'cliente', label: 'Cliente' },
-        { key: 'monto', label: 'Monto', type: 'number', placeholder: '0.00', prefix: '$' },
-        { key: 'vence', label: 'Vence', type: 'date' },
-        { key: 'estado', label: 'Estado', placeholder: 'Pendiente' }
-      ];
-    case 'cuentasPagar':
-      return [
-        { key: 'fecha', label: 'Fecha', type: 'date' },
-        { key: 'proveedor', label: 'Proveedor' },
-        { key: 'monto', label: 'Monto', type: 'number', placeholder: '0.00', prefix: '$' },
-        { key: 'vence', label: 'Vence', type: 'date' },
-        { key: 'estado', label: 'Estado', placeholder: 'Pendiente' }
-      ];
-    case 'proveedores':
-      return [
-        { key: 'nombre', label: 'Nombre' },
-        { key: 'contacto', label: 'Contacto' },
-        { key: 'telefono', label: 'Teléfono' },
-        { key: 'servicios', label: 'Servicios' }
-      ];
     case 'nomina':
       return [
         { key: 'fecha', label: 'Fecha', type: 'date' },
         { key: 'sueldo', label: 'Sueldo', type: 'number', placeholder: '0.00', prefix: '$' },
-        { key: 'metodoPago', label: 'Método de pago' },
+        { key: 'metodoPago', label: 'Método de pago', type: 'select', options: ['Pago móvil', 'Efectivo'] },
         { key: 'observaciones', label: 'Observaciones', placeholder: 'Descripción' }
       ];
     default:
       return [];
   }
 }
-function updateInversionPrecio(index) {
-  const item = state.inversion[index];
-  if (!item) return '0.00';
-  const precio = calculatePrecio(item.costo, item.porcentaje).toFixed(2);
-  item.precio = precio;
-  return precio;
-}
-function createCardRow(label, value) {
-  const row = document.createElement('div');
-  row.className = 'card-row';
-  const labelEl = document.createElement('span');
-  labelEl.textContent = label;
-  const valueEl = document.createElement('strong');
-  valueEl.textContent = value || '-';
-  row.appendChild(labelEl);
-  row.appendChild(valueEl);
-  return row;
-}
-function createCardActions(section, index) {
-  const actionContainer = document.createElement('div');
-  actionContainer.className = 'card-actions';
-  const editButton = document.createElement('button');
-  editButton.type = 'button';
-  editButton.className = 'button secondary';
-  editButton.textContent = 'Editar';
-  editButton.addEventListener('click', () => {
-    drafts[section] = {
-      mode: 'edit',
-      item: { ...state[section][index] },
-      index
-    };
-    renderAll();
-  });
-  const deleteButton = document.createElement('button');
-  deleteButton.type = 'button';
-  deleteButton.className = 'button secondary';
-  deleteButton.textContent = 'Eliminar';
-  deleteButton.addEventListener('click', () => {
-    state[section].splice(index, 1);
-    renderAll();
-  });
-  actionContainer.appendChild(editButton);
-  actionContainer.appendChild(deleteButton);
-  return actionContainer;
-}
-function createDraftCard(section) {
-  const draft = drafts[section];
-  if (!draft) return null;
-  const fields = getSectionFields(section);
-  const card = document.createElement('div');
-  card.className = 'card-item draft-card';
-  fields.forEach(field => {
-    const row = document.createElement('div');
-    row.className = 'card-row';
-    const labelEl = document.createElement('span');
-    labelEl.textContent = field.label || field.key;
-    row.appendChild(labelEl);
 
-    const createOptionGroup = (options, key) => {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'option-buttons';
-      options.forEach(option => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'option-button';
-        button.textContent = option;
-        if (draft.item[key] === option) {
-          button.classList.add('active');
-        }
-        button.addEventListener('click', () => {
-          draft.item[key] = option;
-          renderAll();
-        });
-        wrapper.appendChild(button);
+function createInputCell(value = '', field, onChange) {
+  const td = document.createElement('td');
+  if (field.type === 'select') {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'option-buttons';
+    const options = field.options || [];
+    options.forEach(option => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'option-button';
+      button.textContent = option;
+      if (value === option) button.classList.add('active');
+      button.addEventListener('click', () => {
+        onChange && onChange(option);
       });
-      return wrapper;
-    };
+      wrapper.appendChild(button);
+    });
+    td.appendChild(wrapper);
+    return td;
+  }
 
-    let control;
-    if ((section === 'ventas' || section === 'nomina') && field.key === 'metodoPago') {
-      control = createOptionGroup(['Pago móvil', 'Efectivo'], 'metodoPago');
-    } else if (section === 'ventas' && field.key === 'piPc') {
-      control = createOptionGroup(['Pago inmediato', 'Por cobrar'], 'piPc');
-    } else {
-      control = createInputCell(
-        draft.item[field.key] || '',
-        field.type || 'text',
-        field.placeholder || '',
-        field.prefix || '',
-        field.suffix || '',
-        field.readOnly || false,
-        field.label || ''
-      );
-      const input = control.querySelector('input');
-      if (input && !field.readOnly) {
-        input.addEventListener('input', event => {
-          draft.item[field.key] = event.target.value;
-          if (section === 'inversion' && (field.key === 'costo' || field.key === 'porcentaje')) {
-            draft.item.precio = calculatePrecio(draft.item.costo, draft.item.porcentaje).toFixed(2);
-            renderAll();
-          }
-        });
-      }
+  const input = document.createElement('input');
+  input.type = field.type || 'text';
+  input.value = value;
+  input.placeholder = field.placeholder || '';
+  if (field.readOnly) {
+    input.readOnly = true;
+    input.tabIndex = -1;
+    input.style.background = 'rgba(255,255,255,0.08)';
+  }
+  if (field.prefix || field.suffix) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'input-cell';
+    if (field.prefix) {
+      const prefix = document.createElement('span');
+      prefix.className = 'input-prefix';
+      prefix.textContent = field.prefix;
+      wrapper.appendChild(prefix);
     }
+    wrapper.appendChild(input);
+    if (field.suffix) {
+      const suffix = document.createElement('span');
+      suffix.className = 'input-suffix';
+      suffix.textContent = field.suffix;
+      wrapper.appendChild(suffix);
+    }
+    td.appendChild(wrapper);
+  } else {
+    td.appendChild(input);
+  }
+  if (onChange) {
+    input.addEventListener('input', event => onChange(event.target.value));
+  }
+  return td;
+}
 
-    row.appendChild(control);
-    card.appendChild(row);
+function formatDisplayValue(itemValue, field) {
+  if (itemValue === undefined || itemValue === null || itemValue === '') {
+    return '-';
+  }
+  return `${field.prefix || ''}${itemValue}${field.suffix || ''}`;
+}
+
+function createRow(section, item, index) {
+  const fields = getSectionFields(section);
+  const tr = document.createElement('tr');
+  fields.forEach(field => {
+    const td = document.createElement('td');
+    td.textContent = formatDisplayValue(item[field.key], field);
+    tr.appendChild(td);
   });
-  const actions = document.createElement('div');
-  actions.className = 'card-actions';
-  const saveButton = document.createElement('button');
-  saveButton.type = 'button';
-  saveButton.className = 'button primary';
-  saveButton.textContent = draft.mode === 'edit' ? 'Guardar' : 'Agregar';
-  saveButton.addEventListener('click', () => {
-    if (draft.mode === 'edit' && typeof draft.index === 'number') {
-      state[section][draft.index] = { ...draft.item };
-    } else {
-      state[section].push({ ...draft.item });
-    }
-    drafts[section] = null;
+  const actionTd = document.createElement('td');
+  const editBtn = document.createElement('button');
+  editBtn.className = 'button secondary';
+  editBtn.textContent = 'Editar';
+  editBtn.addEventListener('click', () => {
+    drafts[section] = { mode: 'edit', index, item: { ...item } };
+    renderAll();
+  });
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'button secondary';
+  deleteBtn.textContent = 'Eliminar';
+  deleteBtn.addEventListener('click', () => {
+    state[section].splice(index, 1);
     saveState();
     renderAll();
   });
-  const cancelButton = document.createElement('button');
-  cancelButton.type = 'button';
-  cancelButton.className = 'button secondary';
-  cancelButton.textContent = 'Cancelar';
-  cancelButton.addEventListener('click', () => {
-    drafts[section] = null;
-    renderAll();
-  });
-  actions.appendChild(saveButton);
-  actions.appendChild(cancelButton);
-  card.appendChild(actions);
-  return card;
+  actionTd.appendChild(editBtn);
+  actionTd.appendChild(deleteBtn);
+  tr.appendChild(actionTd);
+  return tr;
 }
-function renderCards(section) {
-  const container = cards[section];
-  if (!container) return;
-  container.innerHTML = '';
-  const draftCard = createDraftCard(section);
-  if (draftCard) {
-    container.appendChild(draftCard);
-  }
-  state[section].forEach((item, index) => {
-    const card = document.createElement('div');
-    card.className = 'card-item';
-    getSectionFields(section).forEach(field => {
-      card.appendChild(createCardRow(field.label || field.key, formatFieldValue(item[field.key], field)));
-    });
-    card.appendChild(createCardActions(section, index));
-    container.appendChild(card);
-  });
-}
+
 function renderTable(section) {
   const tbody = tables[section];
   tbody.innerHTML = '';
   const draft = drafts[section];
   const fields = getSectionFields(section);
   if (draft) {
-    const row = document.createElement('tr');
-    row.className = 'draft-row';
+    const tr = document.createElement('tr');
     fields.forEach(field => {
-      const value = draft.item[field.key] || '';
-      let cell;
-      if ((section === 'ventas' || section === 'nomina') && field.key === 'metodoPago') {
-        cell = document.createElement('td');
-        const wrapper = document.createElement('div');
-        wrapper.className = 'option-buttons';
-        ['Pago móvil', 'Efectivo'].forEach(option => {
-          const button = document.createElement('button');
-          button.type = 'button';
-          button.className = 'option-button';
-          button.textContent = option;
-          if (value === option) {
-            button.classList.add('active');
-          }
-          button.addEventListener('click', () => {
-            draft.item.metodoPago = option;
-            renderAll();
-          });
-          wrapper.appendChild(button);
-        });
-        if (field.label) cell.dataset.label = field.label;
-        cell.appendChild(wrapper);
-      } else if (section === 'ventas' && field.key === 'piPc') {
-        cell = document.createElement('td');
-        const wrapper = document.createElement('div');
-        wrapper.className = 'option-buttons';
-        ['Pago inmediato', 'Por cobrar'].forEach(option => {
-          const button = document.createElement('button');
-          button.type = 'button';
-          button.className = 'option-button';
-          button.textContent = option;
-          if (value === option) {
-            button.classList.add('active');
-          }
-          button.addEventListener('click', () => {
-            draft.item.piPc = option;
-            renderAll();
-          });
-          wrapper.appendChild(button);
-        });
-        if (field.label) cell.dataset.label = field.label;
-        cell.appendChild(wrapper);
-      } else {
-        cell = createInputCell(value, field.type || 'text', field.placeholder || '', field.prefix || '', field.suffix || '', field.readOnly || false, field.label || '');
-        const input = cell.querySelector('input');
-        if (input && !field.readOnly) {
-          input.addEventListener('input', event => {
-            draft.item[field.key] = event.target.value;
-            if (section === 'inversion' && (field.key === 'costo' || field.key === 'porcentaje')) {
-              draft.item.precio = calculatePrecio(draft.item.costo, draft.item.porcentaje).toFixed(2);
-              const priceIndex = fields.findIndex(f => f.key === 'precio');
-              const priceCell = row.querySelectorAll('td')[priceIndex];
-              const priceInput = priceCell ? priceCell.querySelector('input') : null;
-              if (priceInput) {
-                priceInput.value = draft.item.precio;
-              }
-            }
-          });
+      const td = createInputCell(draft.item[field.key] ?? '', field, value => {
+        draft.item[field.key] = value;
+        if (section === 'inversion' && ['costo', 'porcentaje', 'cantidad'].includes(field.key)) {
+          const costo = Number(draft.item.costo) || 0;
+          const porcentaje = Number(draft.item.porcentaje) || 0;
+          draft.item.precio = (costo * (1 + porcentaje / 100)).toFixed(2);
         }
-      }
-      row.appendChild(cell);
+        if (section === 'ventas' && ['cantidad', 'precioUnitario'].includes(field.key)) {
+          const cantidad = Number(draft.item.cantidad) || 0;
+          const precioUnitario = Number(draft.item.precioUnitario) || 0;
+          draft.item.total = (cantidad * precioUnitario).toFixed(2);
+        }
+        renderAll();
+      });
+      tr.appendChild(td);
     });
-    const actionCell = document.createElement('td');
-    actionCell.className = 'draft-action-cell';
-    const saveButton = document.createElement('button');
-    saveButton.type = 'button';
-    saveButton.className = 'button primary';
-    saveButton.textContent = draft.mode === 'edit' ? 'Guardar' : 'Agregar';
-    saveButton.addEventListener('click', () => {
-      if (draft.mode === 'edit' && typeof draft.index === 'number') {
+    const actionTd = document.createElement('td');
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'button primary';
+    saveBtn.textContent = 'Guardar';
+    saveBtn.addEventListener('click', () => {
+      if (draft.mode === 'edit') {
         state[section][draft.index] = { ...draft.item };
       } else {
         state[section].push({ ...draft.item });
@@ -529,86 +253,49 @@ function renderTable(section) {
       saveState();
       renderAll();
     });
-    const cancelButton = document.createElement('button');
-    cancelButton.type = 'button';
-    cancelButton.className = 'button secondary';
-    cancelButton.textContent = 'Cancelar';
-    cancelButton.addEventListener('click', () => {
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'button secondary';
+    cancelBtn.textContent = 'Cancelar';
+    cancelBtn.addEventListener('click', () => {
       drafts[section] = null;
       renderAll();
     });
-    actionCell.appendChild(saveButton);
-    actionCell.appendChild(cancelButton);
-    row.appendChild(actionCell);
-    tbody.appendChild(row);
+    actionTd.appendChild(saveBtn);
+    actionTd.appendChild(cancelBtn);
+    tr.appendChild(actionTd);
+    tbody.appendChild(tr);
   }
-  state[section].forEach((item, index) => {
-    if (draft && draft.mode === 'edit' && draft.index === index) {
-      return;
-    }
-    const row = document.createElement('tr');
-    fields.forEach(field => {
-      const value = item[field.key] || '';
-      row.appendChild(createDisplayCell(value, field.label || '', field.prefix || '', field.suffix || ''));
-    });
-    row.appendChild(createActionMenuCell(section, index, 'Acciones'));
-    tbody.appendChild(row);
-  });
+  state[section].forEach((item, index) => tbody.appendChild(createRow(section, item, index)));
 }
+
 function renderAll() {
-  Object.keys(tables).forEach(section => {
-    renderTable(section);
-    renderCards(section);
-  });
+  Object.keys(tables).forEach(renderTable);
   calculateTotals();
-  saveState();
 }
+
 function addRow(section) {
-  if (drafts[section]) {
-    return;
-  }
-  drafts[section] = {
-    mode: 'new',
-    item: getBlankEntry(section)
-  };
+  drafts[section] = { mode: 'new', item: getBlankEntry(section) };
   renderAll();
-  const sectionElement = document.getElementById(section);
-  const firstInput = sectionElement.querySelector('tbody tr input');
-  if (firstInput) {
-    firstInput.focus();
-  }
 }
+
 function switchSection(event) {
   sectionButtons.forEach(button => button.classList.toggle('active', button === event.currentTarget));
   const target = event.currentTarget.dataset.section;
   sections.forEach(section => section.id === target ? section.classList.add('active') : section.classList.remove('active'));
 }
+
 function buildCsv() {
   const rows = [];
-  const names = { inversion: 'Inversion', ventas: 'Ventas', gastos: 'Gastos', nomina: 'Nomina' };
   Object.entries(state).forEach(([section, items]) => {
     if (!items.length) return;
+    rows.push([section.toUpperCase()]);
     const fields = getSectionFields(section);
-    rows.push([names[section]]);
-    rows.push(fields.map(field => field.key.toUpperCase()));
-    items.forEach(item => {
-      rows.push(fields.map(field => item[field.key] || ''));
-    });
+    rows.push(fields.map(field => field.label));
+    items.forEach(item => rows.push(fields.map(field => item[field.key] || '')));
     rows.push(['']);
   });
   return rows.map(row => row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(',')).join('\n');
 }
-function closeAllMenus() {
-  document.querySelectorAll('.menu-wrapper.open').forEach(wrapper => {
-    wrapper.classList.remove('open');
-    const button = wrapper.querySelector('.menu-trigger');
-    if (button) {
-      button.setAttribute('aria-expanded', 'false');
-    }
-  });
-}
-
-document.addEventListener('click', closeAllMenus);
 
 function downloadCsv() {
   const csv = buildCsv();
@@ -621,20 +308,9 @@ function downloadCsv() {
   link.click();
   document.body.removeChild(link);
 }
-sectionButtons.forEach(button => button.addEventListener('click', event => {
-  switchSection(event);
-  if (mobileMenu) {
-    mobileMenu.classList.remove('open');
-    menuToggle.setAttribute('aria-expanded', 'false');
-  }
-}));
+
+sectionButtons.forEach(button => button.addEventListener('click', switchSection));
 addButtons.forEach(button => button.addEventListener('click', () => addRow(button.dataset.add)));
 downloadCsvButton.addEventListener('click', downloadCsv);
-if (menuToggle && mobileMenu) {
-  menuToggle.addEventListener('click', () => {
-    const open = mobileMenu.classList.toggle('open');
-    mobileMenu.setAttribute('aria-hidden', String(!open));
-    menuToggle.setAttribute('aria-expanded', String(open));
-  });
-}
+
 renderAll();
