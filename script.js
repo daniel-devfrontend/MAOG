@@ -30,6 +30,12 @@ const totals = {
   totalInvestment: document.getElementById('totalInvestment'),
   totalPayroll: document.getElementById('totalPayroll')
 };
+const cards = {
+  inversion: document.getElementById('cardsInversion'),
+  ventas: document.getElementById('cardsVentas'),
+  gastos: document.getElementById('cardsGastos'),
+  nomina: document.getElementById('cardsNomina')
+};
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -203,6 +209,138 @@ function updateInversionPrecio(index) {
   item.precio = precio;
   return precio;
 }
+function createCardRow(label, value) {
+  const row = document.createElement('div');
+  row.className = 'card-row';
+  const labelEl = document.createElement('span');
+  labelEl.textContent = label;
+  const valueEl = document.createElement('strong');
+  valueEl.textContent = value || '-';
+  row.appendChild(labelEl);
+  row.appendChild(valueEl);
+  return row;
+}
+function createCardActions(section, index) {
+  const actionContainer = document.createElement('div');
+  actionContainer.className = 'card-actions';
+  const editButton = document.createElement('button');
+  editButton.type = 'button';
+  editButton.className = 'button secondary';
+  editButton.textContent = 'Editar';
+  editButton.addEventListener('click', () => {
+    drafts[section] = {
+      mode: 'edit',
+      item: { ...state[section][index] },
+      index
+    };
+    renderAll();
+  });
+  const deleteButton = document.createElement('button');
+  deleteButton.type = 'button';
+  deleteButton.className = 'button secondary';
+  deleteButton.textContent = 'Eliminar';
+  deleteButton.addEventListener('click', () => {
+    state[section].splice(index, 1);
+    renderAll();
+  });
+  actionContainer.appendChild(editButton);
+  actionContainer.appendChild(deleteButton);
+  return actionContainer;
+}
+function createDraftCard(section) {
+  const draft = drafts[section];
+  if (!draft) return null;
+  const fields = getSectionFields(section);
+  const card = document.createElement('div');
+  card.className = 'card-item draft-card';
+  fields.forEach(field => {
+    const row = document.createElement('div');
+    row.className = 'card-row';
+    const labelEl = document.createElement('span');
+    labelEl.textContent = field.label || field.key;
+    row.appendChild(labelEl);
+    const input = document.createElement('input');
+    input.type = field.type || 'text';
+    input.value = draft.item[field.key] || '';
+    input.placeholder = field.placeholder || '';
+    if (field.readOnly) {
+      input.readOnly = true;
+      input.tabIndex = -1;
+      input.style.background = '#f3f4f6';
+    }
+    if (field.suffix) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'input-cell';
+      const suffixEl = document.createElement('span');
+      suffixEl.className = 'input-suffix';
+      suffixEl.textContent = field.suffix;
+      wrapper.appendChild(input);
+      wrapper.appendChild(suffixEl);
+      row.appendChild(wrapper);
+    } else {
+      row.appendChild(input);
+    }
+    if (input && !field.readOnly) {
+      input.addEventListener('input', event => {
+        draft.item[field.key] = event.target.value;
+        if (section === 'inversion' && (field.key === 'costo' || field.key === 'porcentaje')) {
+          draft.item.precio = calculatePrecio(draft.item.costo, draft.item.porcentaje).toFixed(2);
+          const priceField = fields.find(f => f.key === 'precio');
+          if (priceField) {
+            // no extra action needed, value updates automatically from draft.item
+          }
+        }
+      });
+    }
+    card.appendChild(row);
+  });
+  const actions = document.createElement('div');
+  actions.className = 'card-actions';
+  const saveButton = document.createElement('button');
+  saveButton.type = 'button';
+  saveButton.className = 'button primary';
+  saveButton.textContent = draft.mode === 'edit' ? 'Guardar' : 'Agregar';
+  saveButton.addEventListener('click', () => {
+    if (draft.mode === 'edit' && typeof draft.index === 'number') {
+      state[section][draft.index] = { ...draft.item };
+    } else {
+      state[section].push({ ...draft.item });
+    }
+    drafts[section] = null;
+    saveState();
+    renderAll();
+  });
+  const cancelButton = document.createElement('button');
+  cancelButton.type = 'button';
+  cancelButton.className = 'button secondary';
+  cancelButton.textContent = 'Cancelar';
+  cancelButton.addEventListener('click', () => {
+    drafts[section] = null;
+    renderAll();
+  });
+  actions.appendChild(saveButton);
+  actions.appendChild(cancelButton);
+  card.appendChild(actions);
+  return card;
+}
+function renderCards(section) {
+  const container = cards[section];
+  if (!container) return;
+  container.innerHTML = '';
+  const draftCard = createDraftCard(section);
+  if (draftCard) {
+    container.appendChild(draftCard);
+  }
+  state[section].forEach((item, index) => {
+    const card = document.createElement('div');
+    card.className = 'card-item';
+    getSectionFields(section).forEach(field => {
+      card.appendChild(createCardRow(field.label || field.key, item[field.key] || '-'));
+    });
+    card.appendChild(createCardActions(section, index));
+    container.appendChild(card);
+  });
+}
 function renderTable(section) {
   const tbody = tables[section];
   tbody.innerHTML = '';
@@ -274,7 +412,10 @@ function renderTable(section) {
   });
 }
 function renderAll() {
-  Object.keys(tables).forEach(section => renderTable(section));
+  Object.keys(tables).forEach(section => {
+    renderTable(section);
+    renderCards(section);
+  });
   calculateTotals();
   saveState();
 }

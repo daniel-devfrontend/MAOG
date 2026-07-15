@@ -432,6 +432,50 @@ body {
   .draft-row {
     background: #f8fafc;
   }
+  .table-frame {
+    display: none;
+  }
+  .cards-view {
+    display: grid;
+    gap: 16px;
+  }
+  .card-item {
+    display: grid;
+    gap: 14px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 24px;
+    padding: 18px;
+    box-shadow: 0 15px 30px rgba(15, 23, 42, 0.08);
+  }
+  .card-row {
+    display: grid;
+    gap: 6px;
+  }
+  .card-row span {
+    color: #6b7280;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .card-row strong {
+    color: #111827;
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+  .card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+  .card-actions .button {
+    min-width: 92px;
+    padding: 11px 14px;
+  }
+  .draft-card {
+    background: #f8fafc;
+  }
 }
 @media (max-width: 520px) {
   .topbar {
