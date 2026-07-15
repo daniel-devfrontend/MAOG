@@ -31,30 +31,37 @@ body {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 16px;
-  align-items: center;
+  align-items: flex-start;
   padding: 24px 20px 18px;
   background: rgba(17, 24, 39, 0.92);
   border-bottom: 1px solid rgba(255,255,255,0.06);
   backdrop-filter: blur(10px);
 }
+.brand-copy {
+  display: grid;
+  gap: 12px;
+}
 .eyebrow {
   display: inline-block;
-  margin-bottom: 10px;
   color: #c4b5fd;
   font-size: 0.78rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
+.brand-titles {
+  display: grid;
+  gap: 10px;
+}
 .topbar h1 {
   margin: 0;
-  font-size: clamp(1.65rem, 2.3vw, 2.4rem);
-  line-height: 1.05;
+  font-size: clamp(1.55rem, 2.2vw, 2.2rem);
+  line-height: 1.1;
 }
 .topbar p {
-  margin: 10px 0 0;
-  max-width: 480px;
+  margin: 0;
+  max-width: 560px;
   color: var(--muted);
-  font-size: 0.98rem;
+  font-size: 0.96rem;
   line-height: 1.7;
 }
 .topbar-actions {
@@ -89,7 +96,7 @@ body {
 }
 .tabs {
   position: fixed;
-  inset: 88px 16px auto 16px;
+  inset: 84px 16px auto 16px;
   z-index: 20;
   display: none;
   gap: 10px;
@@ -99,12 +106,14 @@ body {
   border-radius: 24px;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.22s ease;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  transform: translateY(-10px);
 }
 .tabs.open {
   display: grid;
   opacity: 1;
   pointer-events: auto;
+  transform: translateY(0);
 }
 .tab {
   border-radius: 16px;
@@ -285,13 +294,25 @@ input::placeholder {
   }
 }
 @media (max-width: 720px) {
-  .tabs {
+  .topbar {
     grid-template-columns: 1fr;
+  }
+  .topbar-actions {
+    justify-content: space-between;
+    width: 100%;
+  }
+  .hamburger {
+    width: 46px;
+    height: 46px;
+  }
+  .button.primary {
+    padding: 12px 16px;
+  }
+  .tabs {
+    inset: 92px 12px auto 12px;
+    width: calc(100% - 24px);
   }
   .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-  .topbar {
     grid-template-columns: 1fr;
   }
 }
